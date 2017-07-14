@@ -1,9 +1,7 @@
 package scenery.scenery;
 
-import android.*;
-import android.Manifest;
 import android.content.Context;
-import android.content.IntentSender;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -13,8 +11,8 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,23 +21,16 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.support.v7.view.ActionMode;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -51,11 +42,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.common.api.ApiException;
+
+import java.util.ArrayList;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -70,8 +58,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
-    private Filter filter;
+    private ActionMode mActionMode;
     private static final String TAG = MapsActivity.class.getSimpleName();
+    private Toolbar myToolbar;
+
+    ArrayList<FilterItem> filters;
 
     //public LatLng currLoc;
 
@@ -82,8 +73,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -118,8 +110,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             case R.id.action_filter:
-                // User chose the "Favorite" action, mark the current item
-                // as a favorite...
+                // User chose the "Filter" action
+                Intent filterIntent = new Intent(MapsActivity.this, FilterActivity.class);
+                filterIntent.putExtra("fil",filters);
+                startActivity(filterIntent);
+
+                //startActivityForResult(filterIntent, 1);
                 return true;
 
             default:
@@ -141,7 +137,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
+        createFilterList();
 
         try {
             // Customise the styling of the base map using a JSON object defined
@@ -182,8 +178,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         MoveMap(startLoc, false);
 
-        CreateMarkers();
 
+        CreateMarkers();
 
 /*
         final Button myLocationButton = (Button) findViewById(R.id.myLocationButton);
@@ -225,6 +221,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
+
         }
     }
 
@@ -250,17 +247,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void CreateMarkers() {
 
-        Place[] newPlaceArr = DummyPlaces.CreatePlacesArr();
-        for (Place i : newPlaceArr
-                ) {
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(i.Latitude, i.Longitude))
-                    .title(i.Name)
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.mic))
-                    .snippet(i.Day + ", "+ i.Time + "\n" + "Hosted by: "+ i.Host + "\n" + i.Address));
+            Place[] newPlaceArr = DummyPlaces.CreatePlacesArr();
+            for (Place i : newPlaceArr
+                    ) {
 
 
-        }
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(i.Latitude, i.Longitude))
+                        .title(i.Name)
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.mic))
+                        .snippet(i.Day + ", " + i.Time + "\n" + "Hosted by: " + i.Host + "\n" + i.Address));
+
+
+            }
+
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
             @Override
@@ -296,6 +296,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("er","is this ever called?");
+        Bundle extra = data.getBundleExtra("FilterItems");
+        this.filters = (ArrayList<FilterItem>) extra.getSerializable("FilterItems");
+
+        CreateMarkers();
 
     }
 
@@ -406,6 +417,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // other 'case' lines to check for other permissions this app might request.
             //You can add here other case statements according to your requirement.
         }
+    }
+
+    private void createFilterList(){
+
+        ArrayList<FilterItem> filters = new ArrayList<FilterItem>();
+
+        filters.add(new FilterItem("Comedy", true));
+        filters.add(new FilterItem("Trivia", true));
+        filters.add(new FilterItem("Karaoke", true));
+        filters.add(new FilterItem("Music", true));
+
+        this.filters = filters;
     }
 
 
