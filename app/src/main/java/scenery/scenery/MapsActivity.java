@@ -1,5 +1,7 @@
 package scenery.scenery;
 
+import android.*;
+import android.Manifest;
 import android.content.Context;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -14,8 +16,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -52,7 +58,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.common.api.ApiException;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener{
@@ -64,47 +70,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
+    private Filter filter;
     private static final String TAG = MapsActivity.class.getSimpleName();
 
     //public LatLng currLoc;
 
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-    public boolean checkLocationPermission(){
-        if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
 
-            // Asking user if explanation is needed
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-                //Prompt the user once explanation has been shown
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            checkLocationPermission();
+        }
 
         SetUpMap();
         /*
@@ -115,6 +99,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+
+
+            case R.id.action_filter:
+                // User chose the "Favorite" action, mark the current item
+                // as a favorite...
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -126,6 +140,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+
 
         try {
             // Customise the styling of the base map using a JSON object defined
@@ -145,13 +161,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
+                Log.d("AFL", "PERMISSION CHECK COMPLETE");
+
                 buildGoogleApiClient();
                 mMap.setMyLocationEnabled(true);
+            }
+            else {
+                Log.d("AFL", "PERMISSION CHECK NOT COMPLETE");
             }
         }
         else {
@@ -162,6 +184,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         CreateMarkers();
 
+
+/*
         final Button myLocationButton = (Button) findViewById(R.id.myLocationButton);
         myLocationButton.setOnClickListener(new View.OnClickListener() {
 
@@ -190,7 +214,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Code here executes on main thread after user presses button
             }
         });
+
+        */
     }
+
 
     public void SetUpMap() {
 
@@ -314,6 +341,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+    }
+
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    public boolean checkLocationPermission(){
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Asking user if explanation is needed
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     @Override
