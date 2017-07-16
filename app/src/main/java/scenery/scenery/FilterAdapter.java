@@ -1,6 +1,7 @@
 package scenery.scenery;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,9 +20,9 @@ import android.widget.Toast;
 
 public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder>{
 
-    private List<FilterItem> fiList;
+    private ArrayList<FilterItem> fiList;
 
-    public FilterAdapter(List<FilterItem> filteritems){
+    public FilterAdapter(ArrayList<FilterItem> filteritems){
         this.fiList = filteritems;
     }
 
@@ -58,10 +59,12 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
                 contact.setChecked(cb.isChecked());
                 fiList.get(pos).setChecked(cb.isChecked());
 
+                /*
                 Toast.makeText(
                         v.getContext(),
                         "Clicked on Checkbox: " + cb.getText() + " is "
                                 + cb.isChecked(), Toast.LENGTH_LONG).show();
+                                */
             }
         });
 
@@ -93,7 +96,7 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
     }
 
     // method to access in activity after updating selection
-    public List<FilterItem> getFilterList() {
+    public ArrayList<FilterItem> getFilterList() {
         return fiList;
     }
 }

@@ -41,21 +41,24 @@ public class FilterActivity extends AppCompatActivity {
         mAdapter = new FilterAdapter(filterItemArrayList);
         mRecyclerView.setAdapter(mAdapter);
 
+        Button setFilterButton = (Button) findViewById(R.id.setFilterButton);
+        setFilterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<FilterItem> fiList = ((FilterAdapter) mAdapter)
+                        .getFilterList();
+
+                Intent resultIntent = new Intent();
+                Bundle b = new Bundle();
+                b.putSerializable("FilterItems", fiList);
+                resultIntent.putExtras(b);
+                setResult(MapsActivity.RESULT_OK, resultIntent);
+                finish();
+            }
+        });
 
 
-    }
 
-
-    @Override
-    public void onBackPressed() {
-        List<FilterItem> fiList = ((FilterAdapter) mAdapter)
-                .getFilterList();
-
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("FilterItems", (Serializable) fiList);
-        setResult(MapsActivity.RESULT_OK, resultIntent);
-        finish();
-        return;
     }
 
 

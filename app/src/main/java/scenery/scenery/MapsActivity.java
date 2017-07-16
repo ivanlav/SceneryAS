@@ -51,6 +51,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener{
 
+    private static final int FILTER_RESULT = 1;
     //private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private GoogleMap mMap;
     public LatLng startLoc = new LatLng(42.351035, -71.115051);
@@ -74,7 +75,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        myToolbar.setLogo(R.mipmap.sceneary);
+        //myToolbar.setLogo(R.mipmap.sceneary);
         setSupportActionBar(myToolbar);
 
 
@@ -114,7 +115,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // User chose the "Filter" action
                 Intent filterIntent = new Intent(MapsActivity.this, FilterActivity.class);
                 filterIntent.putExtra("fil",filters);
-                startActivity(filterIntent);
+                startActivityForResult(filterIntent,FILTER_RESULT);
 
                 //startActivityForResult(filterIntent, 1);
                 return true;
@@ -248,11 +249,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void CreateMarkers(){
 
-        CreateComedyMarkers();
-        CreateTriviaMarkers();
+        if(filters.get(0).getChecked()) {
+            CreateComedyMarkers();
+        }
+        if(filters.get(1).getChecked()) {
+            CreateTriviaMarkers();
+        }
     }
 
     public void CreateTriviaMarkers() {
+
         Place[] newPlaceArr = DummyPlaces.CreateTriviaPlacesArr();
         for (Place i : newPlaceArr
                 ) {
@@ -317,10 +323,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("er","is this ever called?");
-        Bundle extra = data.getBundleExtra("FilterItems");
-        this.filters = (ArrayList<FilterItem>) extra.getSerializable("FilterItems");
+        //Log.d("er","is this ever called?");
+        Bundle b = data.getExtras();
+        filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
 
+        mMap.clear();
         CreateMarkers();
 
     }
@@ -440,8 +447,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         filters.add(new FilterItem("Comedy", true));
         filters.add(new FilterItem("Trivia", true));
-        filters.add(new FilterItem("Karaoke", true));
-        filters.add(new FilterItem("Music", true));
+        filters.add(new FilterItem("Karaoke", false));
+        filters.add(new FilterItem("Music", false));
 
         this.filters = filters;
     }
