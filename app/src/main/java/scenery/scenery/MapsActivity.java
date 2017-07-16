@@ -61,6 +61,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ActionMode mActionMode;
     private static final String TAG = MapsActivity.class.getSimpleName();
     private Toolbar myToolbar;
+    static final int FILTER_RESULT = 1;
 
     ArrayList<FilterItem> filters;
 
@@ -112,8 +113,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.action_filter:
                 // User chose the "Filter" action
                 Intent filterIntent = new Intent(MapsActivity.this, FilterActivity.class);
-                filterIntent.putExtra("fil",filters);
-                startActivity(filterIntent);
+                Bundle b = new Bundle();
+                b.putSerializable("fil",filters);
+                filterIntent.putExtras(b);
+                startActivityForResult(filterIntent,FILTER_RESULT);
 
                 //startActivityForResult(filterIntent, 1);
                 return true;
@@ -301,12 +304,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e("FIL", "is this ever called?");
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("er","is this ever called?");
-        Bundle extra = data.getBundleExtra("FilterItems");
-        this.filters = (ArrayList<FilterItem>) extra.getSerializable("FilterItems");
+        if(requestCode == FILTER_RESULT) {
+            if(resultCode == RESULT_OK) {
+                Log.d("FIL", "is this ever called?");
 
-        CreateMarkers();
+                Bundle b = data.getExtras();
+                filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
+
+            }
+        }
+
+        //CreateMarkers();
 
     }
 
