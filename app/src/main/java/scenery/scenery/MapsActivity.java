@@ -74,6 +74,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar.setLogo(R.mipmap.sceneary);
         setSupportActionBar(myToolbar);
 
 
@@ -245,20 +246,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void CreateMarkers() {
+    public void CreateMarkers(){
 
-            Place[] newPlaceArr = DummyPlaces.CreatePlacesArr();
+        CreateComedyMarkers();
+        CreateTriviaMarkers();
+    }
+
+    public void CreateTriviaMarkers() {
+        Place[] newPlaceArr = DummyPlaces.CreateTriviaPlacesArr();
+        for (Place i : newPlaceArr
+                ) {
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(i.Latitude, i.Longitude))
+                    .title(i.Name)
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.trivia2))
+                    .snippet(i.Day + ", " + i.Time + "\n" + i.Establishment + "\n" + i.Address));
+        }
+    }
+
+    public void CreateComedyMarkers() {
+
+            Place[] newPlaceArr = DummyPlaces.CreateComedyPlacesArr();
             for (Place i : newPlaceArr
                     ) {
-
-
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(i.Latitude, i.Longitude))
                         .title(i.Name)
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.mic))
-                        .snippet(i.Day + ", " + i.Time + "\n" + "Hosted by: " + i.Host + "\n" + i.Address));
-
-
+                        .snippet(i.Day + ", " + i.Time + "\n" + i.Establishment + "\n" + i.Address));
             }
 
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
