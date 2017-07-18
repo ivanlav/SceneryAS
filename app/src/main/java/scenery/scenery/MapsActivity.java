@@ -52,18 +52,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocationListener{
 
     private static final int FILTER_RESULT = 1;
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     //private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private GoogleMap mMap;
     public LatLng startLoc = new LatLng(42.351035, -71.115051);
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private Location mLastLocation;
-    private Marker mCurrLocationMarker;
-    private ActionMode mActionMode;
     private static final String TAG = MapsActivity.class.getSimpleName();
     private Toolbar myToolbar;
-
     ArrayList<FilterItem> filters;
+    private Location mLastLocation;
 
     //public LatLng currLoc;
 
@@ -75,7 +73,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        //myToolbar.setLogo(R.mipmap.sceneary);
         setSupportActionBar(myToolbar);
 
 
@@ -85,11 +82,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         SetUpMap();
-        /*
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        */
     }
 
 
@@ -117,7 +109,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 filterIntent.putExtra("fil",filters);
                 startActivityForResult(filterIntent,FILTER_RESULT);
 
-                //startActivityForResult(filterIntent, 1);
                 return true;
 
             default:
@@ -178,42 +169,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+
         MoveMap(startLoc, false);
-
-
         CreateMarkers();
-
-/*
-        final Button myLocationButton = (Button) findViewById(R.id.myLocationButton);
-        myLocationButton.setOnClickListener(new View.OnClickListener() {
-
-
-            public void onClick(View v) {
-                if (mCurrLocationMarker != null) {
-                    mCurrLocationMarker.remove();
-                }
-
-                //Place current location marker
-
-                LatLng currLoc = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(currLoc);
-                markerOptions.title("Current Position");
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                mCurrLocationMarker = mMap.addMarker(markerOptions);
-
-                //move map camera
-                MoveMap(currLoc,true);
-
-
-                //stop location updates
-
-
-                // Code here executes on main thread after user presses button
-            }
-        });
-
-        */
     }
 
 
@@ -255,6 +213,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(filters.get(1).getChecked()) {
             CreateTriviaMarkers();
         }
+
+        createInfoWindows();
     }
 
     public void CreateTriviaMarkers() {
@@ -281,6 +241,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.mic))
                         .snippet(i.Day + ", " + i.Time + "\n" + i.Establishment + "\n" + i.Address));
             }
+
+    }
+
+    public void createInfoWindows() {
 
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
@@ -316,7 +280,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
-
 
     }
 
@@ -376,7 +339,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mGoogleApiClient.connect();
     }
 
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     public boolean checkLocationPermission(){
         if (ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)

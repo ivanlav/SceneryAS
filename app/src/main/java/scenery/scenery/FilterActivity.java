@@ -42,22 +42,37 @@ public class FilterActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
 
         Button setFilterButton = (Button) findViewById(R.id.setFilterButton);
+
         setFilterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ArrayList<FilterItem> fiList = ((FilterAdapter) mAdapter)
-                        .getFilterList();
 
-                Intent resultIntent = new Intent();
-                Bundle b = new Bundle();
-                b.putSerializable("FilterItems", fiList);
-                resultIntent.putExtras(b);
-                setResult(MapsActivity.RESULT_OK, resultIntent);
-                finish();
+                SaveFilter();
             }
         });
 
 
+
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        SaveFilter();
+        super.onBackPressed();
+    }
+
+    public void SaveFilter(){
+
+        ArrayList<FilterItem> fiList = ((FilterAdapter) mAdapter)
+                .getFilterList();
+
+        Intent resultIntent = new Intent();
+        Bundle b = new Bundle();
+        b.putSerializable("FilterItems", fiList);
+        resultIntent.putExtras(b);
+        setResult(MapsActivity.RESULT_OK, resultIntent);
+        finish();
 
     }
 
