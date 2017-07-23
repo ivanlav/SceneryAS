@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:text="@string/date_label_set"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@android:color/black" />
+
+    <Button
+        android:id="@+id/pickdatebutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="70dp"
+        android:layout_alignRight="@id/textView1"
+        android:text="@string/date_button_set" />
+
+    <Button
+        android:id="@+id/todaybutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignLeft="@id/textView1"
+        android:layout_marginTop="70dp"
+        android:onClick="setDate"
+        android:text="@string/today" />
+
+    <Button
+        android:id="@+id/updatebutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/update"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="viewStart" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="24dp"
+        android:text="@string/date_selected"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView3"
+        android:layout_marginTop="24dp"
+        android:layout_centerHorizontal="true"
+        android:text="@string/date_view_set"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+
+
+
+
+</RelativeLayout>

@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Build;
+import android.os.Debug;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.test.suitebuilder.TestMethod;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -44,6 +46,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -53,6 +57,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int FILTER_RESULT = 1;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    private static final int CALENDAR_RESULT = 2;
     //private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private GoogleMap mMap;
     public LatLng startLoc = new LatLng(42.351035, -71.115051);
@@ -63,6 +68,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<FilterItem> filters;
     private Location mLastLocation;
 
+   private Calendar setDate;
     //public LatLng currLoc;
 
 
@@ -72,8 +78,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        if(savedInstanceState == null){
+            createFilterList();
+            setDate =Calendar.getInstance();
+        }
+
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -82,6 +94,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         SetUpMap();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("calendar",setDate);
+        outState.putSerializable("filters",filters);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        setDate = (Calendar) savedInstanceState.getSerializable("calendar");
+        filters = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");
     }
 
 
@@ -111,6 +137,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 return true;
 
+            case R.id.action_calendar:
+                // User chose the "Filter" action
+                Intent calendarIntent = new Intent(MapsActivity.this, PickDate.class);
+                calendarIntent.putExtra("cal",setDate);
+                startActivityForResult(calendarIntent,CALENDAR_RESULT);
+
+                return true;
+
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
@@ -129,8 +163,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
-        createFilterList();
 
         try {
             // Customise the styling of the base map using a JSON object defined
@@ -170,6 +202,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMyLocationEnabled(true);
         }
 
+
         MoveMap(startLoc, false);
         CreateMarkers();
     }
@@ -190,7 +223,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         CameraPosition.Builder builder = CameraPosition.builder();
 
         builder.target(location);
-        builder.zoom(14);
+        builder.zoom(12);
 
         CameraPosition cameraPosition = builder.build();
         CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
@@ -214,7 +247,62 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             CreateTriviaMarkers();
         }
 
+
+        setDateText();
+
         createInfoWindows();
+
+
+    }
+
+    private void setDateText(){
+
+        int year = setDate.get(Calendar.YEAR);
+        int month = setDate.get(Calendar.MONTH);
+        int day = setDate.get(Calendar.DAY_OF_MONTH);
+        int dow = setDate.get(Calendar.DAY_OF_WEEK);
+
+        TextView dateText = (TextView) findViewById(R.id.datetext);
+        dateText.setText(new StringBuilder().append("Viewing events for: \n").append(ConvertDay(dow) + ", ").append(month + 1).append("/")
+                .append(day).append("/").append(year));
+    }
+
+    public String ConvertDay(int i){
+        String dateString = "";
+        switch(i){
+            case(1): dateString = "Sunday";
+                break;
+            case(2): dateString = "Monday";
+                break;
+            case(3): dateString = "Tuesday";
+                break;
+            case(4): dateString = "Wednesday";
+                break;
+            case(5): dateString = "Thursday";
+                break;
+            case(6): dateString = "Friday";
+                break;
+            case(7): dateString = "Saturday";
+                break;
+
+        }
+        return dateString;
+    }
+
+
+    public void AddMarker(Place place, int res){
+        Log.e("Mar", "First: " + ConvertDay(setDate.get(Calendar.DAY_OF_WEEK)));
+        Log.e("Mar", "Second: " + place.Day);
+        if((ConvertDay(setDate.get(Calendar.DAY_OF_WEEK))).equals(place.Day)){
+
+            Log.e("Mar", "AddMarker: ");
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(place.Latitude, place.Longitude))
+                    .title(place.Name)
+                    .icon(BitmapDescriptorFactory.fromResource(res))
+                    .snippet(place.Day + ", " + place.Time + "\n" + place.Establishment + "\n" + place.Address));
+        }
     }
 
     public void CreateTriviaMarkers() {
@@ -222,11 +310,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Place[] newPlaceArr = DummyPlaces.CreateTriviaPlacesArr();
         for (Place i : newPlaceArr
                 ) {
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(i.Latitude, i.Longitude))
-                    .title(i.Name)
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.trivia2))
-                    .snippet(i.Day + ", " + i.Time + "\n" + i.Establishment + "\n" + i.Address));
+            AddMarker(i,R.mipmap.trivia_icon);
+
         }
     }
 
@@ -235,11 +320,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Place[] newPlaceArr = DummyPlaces.CreateComedyPlacesArr();
             for (Place i : newPlaceArr
                     ) {
-                mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(i.Latitude, i.Longitude))
-                        .title(i.Name)
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.mic))
-                        .snippet(i.Day + ", " + i.Time + "\n" + i.Establishment + "\n" + i.Address));
+                AddMarker(i,R.mipmap.mic_icon);
             }
 
     }
@@ -287,9 +368,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //Log.d("er","is this ever called?");
-        Bundle b = data.getExtras();
-        filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
+        switch (requestCode) {
+            case FILTER_RESULT:
+                Bundle b = data.getExtras();
+                filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
+                break;
+            case CALENDAR_RESULT:
+                Log.d("er","is this ever called?");
+                Bundle c = data.getExtras();
 
+                Calendar newCal = (Calendar) c.getSerializable("cal");
+                //Log.d("er",newCal.toString());
+                setDate = newCal;
+                //Log.d("er",setDate.toString());
+                break;
+
+        }
         mMap.clear();
         CreateMarkers();
 

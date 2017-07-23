@@ -7,8 +7,15 @@
         android:title="@string/action_filter"
         app:showAsAction="always" />
 
+    <item
+        android:id="@+id/action_calendar"
+        android:icon="@drawable/ic_date_range_black_24dp"
+        android:title="@string/action_filter"
+        app:showAsAction="always" />
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
+        android:visible="false"
         app:showAsAction="never"/>
 
 </menu>
