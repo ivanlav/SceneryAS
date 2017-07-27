@@ -37,8 +37,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/update"
-        android:layout_alignParentBottom="true"
         android:layout_marginTop="24dp"
+        android:layout_alignParentBottom="true"
         android:layout_marginBottom="24dp"
         android:layout_centerHorizontal="true"
         android:textAlignment="viewStart" />
@@ -48,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_above="@id/updatebutton"
         android:layout_marginTop="24dp"
         android:text="@string/date_selected"
         android:textAppearance="?android:attr/textAppearanceMedium"

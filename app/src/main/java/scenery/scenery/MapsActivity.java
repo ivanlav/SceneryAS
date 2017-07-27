@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Build;
 import android.os.Debug;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -20,10 +21,13 @@ import android.support.v7.widget.Toolbar;
 import android.test.suitebuilder.TestMethod;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.view.ActionMode;
@@ -67,6 +71,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Toolbar myToolbar;
     ArrayList<FilterItem> filters;
     private Location mLastLocation;
+    private boolean mapReady = false;
+
 
    private Calendar setDate;
     //public LatLng currLoc;
@@ -75,10 +81,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("ACTIVITY:","CREATE");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        if(savedInstanceState == null){
+
+
+        if(savedInstanceState != null){
+            setDate = (Calendar) savedInstanceState.getSerializable("calendar");
+            filters = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");}
+        else{
             createFilterList();
             setDate =Calendar.getInstance();
         }
@@ -94,20 +106,51 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         SetUpMap();
+
     }
+
+    @Override
+    protected void onStop(){
+
+        super.onStop();
+        Log.e("ACTIVITY:","STOP");
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if(mapReady){
+            CreateMarkers();
+        }
+        Log.e("ACTIVITY:","RESUME");
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        Log.e("ACTIVITY:","START");
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.e("ACTIVITY:","PAUSE");
+    }
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        Log.e("ACTIVITY:","DESTROY");
+    }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState){
-        super.onSaveInstanceState(outState);
         outState.putSerializable("calendar",setDate);
         outState.putSerializable("filters",filters);
-    }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState){
-        super.onRestoreInstanceState(savedInstanceState);
-        setDate = (Calendar) savedInstanceState.getSerializable("calendar");
-        filters = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");
+        super.onSaveInstanceState(outState);
+
+
     }
 
 
@@ -142,7 +185,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Intent calendarIntent = new Intent(MapsActivity.this, PickDate.class);
                 calendarIntent.putExtra("cal",setDate);
                 startActivityForResult(calendarIntent,CALENDAR_RESULT);
-
                 return true;
 
             default:
@@ -163,6 +205,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mapReady = true;
+        Log.e("ACTIVITY:","MAPREADY");
 
         try {
             // Customise the styling of the base map using a JSON object defined
@@ -203,8 +247,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
-        MoveMap(startLoc, false);
+        MoveMap(startLoc, false, 12);
+
         CreateMarkers();
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                setInfoWindow(marker);
+                MoveMap(marker.getPosition(),true,mMap.getCameraPosition().zoom);
+                return true;
+            }
+        });
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
+                if(info.getVisibility() == RelativeLayout.VISIBLE){
+                    info.setVisibility(RelativeLayout.INVISIBLE);
+                }
+            }
+        });
     }
 
 
@@ -218,12 +282,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void MoveMap(LatLng location, boolean animateCam) {
+    public void MoveMap(LatLng location, boolean animateCam,float zoom) {
 
         CameraPosition.Builder builder = CameraPosition.builder();
 
         builder.target(location);
-        builder.zoom(12);
+        builder.zoom(zoom);
 
         CameraPosition cameraPosition = builder.build();
         CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
@@ -240,6 +304,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void CreateMarkers(){
 
+
+        mMap.clear();
+        setDateText();
+
         if(filters.get(0).getChecked()) {
             CreateComedyMarkers();
         }
@@ -247,10 +315,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             CreateTriviaMarkers();
         }
 
-
-        setDateText();
-
-        createInfoWindows();
+        //createInfoWindows();
 
 
     }
@@ -263,7 +328,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int dow = setDate.get(Calendar.DAY_OF_WEEK);
 
         TextView dateText = (TextView) findViewById(R.id.datetext);
-        dateText.setText(new StringBuilder().append("Viewing events for: \n").append(ConvertDay(dow) + ", ").append(month + 1).append("/")
+        dateText.setText(new StringBuilder().append("Viewing events for: ").append(ConvertDay(dow) + ", ").append(month + 1).append("/")
                 .append(day).append("/").append(year));
     }
 
@@ -297,11 +362,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             Log.e("Mar", "AddMarker: ");
 
-            mMap.addMarker(new MarkerOptions()
+            Marker marker = mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(place.Latitude, place.Longitude))
                     .title(place.Name)
                     .icon(BitmapDescriptorFactory.fromResource(res))
                     .snippet(place.Day + ", " + place.Time + "\n" + place.Establishment + "\n" + place.Address));
+            marker.setTag(place);
         }
     }
 
@@ -310,7 +376,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Place[] newPlaceArr = DummyPlaces.CreateTriviaPlacesArr();
         for (Place i : newPlaceArr
                 ) {
-            AddMarker(i,R.mipmap.trivia_icon);
+            AddMarker(i,setMarkerIcon(i));
 
         }
     }
@@ -320,9 +386,44 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Place[] newPlaceArr = DummyPlaces.CreateComedyPlacesArr();
             for (Place i : newPlaceArr
                     ) {
-                AddMarker(i,R.mipmap.mic_icon);
+                AddMarker(i,setMarkerIcon(i));
             }
 
+    }
+
+    public int setMarkerIcon(Place place){
+
+        if(place.Type.equals("Comedy")){
+            return R.mipmap.mic_icon;
+        }
+        else if(place.Type.equals("Trivia")){
+            return R.mipmap.trivia_icon;
+        }
+        else return R.mipmap.mic_icon;
+    }
+
+    public void setInfoWindow(Marker marker){
+
+        RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
+
+        if(info.getVisibility() == RelativeLayout.INVISIBLE){
+            info.setVisibility(RelativeLayout.VISIBLE);
+        }
+
+        Place place = (Place) marker.getTag();
+
+        TextView title = (TextView) findViewById(R.id.eventtitle);
+        title.setTextColor(Color.BLACK);
+        title.setGravity(Gravity.CENTER);
+        title.setTypeface(null, Typeface.BOLD);
+        title.setText(marker.getTitle());
+
+        TextView snippet = (TextView) findViewById(R.id.eventinfotext);
+        snippet.setTextColor(Color.GRAY);
+        snippet.setText(marker.getSnippet());
+
+        ImageView icon = (ImageView) findViewById(R.id.eventicon);
+        icon.setImageResource(setMarkerIcon(place));
     }
 
     public void createInfoWindows() {
@@ -337,7 +438,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public View getInfoContents(Marker marker) {
 
+                /*
+
                 Context context = getApplicationContext(); //or getActivity(), YourActivity.this, etc.
+
 
                 LinearLayout info = new LinearLayout(context);
                 info.setOrientation(LinearLayout.VERTICAL);
@@ -356,8 +460,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 info.addView(title);
                 info.addView(snippet);
 
-
-                return info;
+*/
+                return null;
 
             }
         });
@@ -372,6 +476,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case FILTER_RESULT:
                 Bundle b = data.getExtras();
                 filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
+
                 break;
             case CALENDAR_RESULT:
                 Log.d("er","is this ever called?");
@@ -381,11 +486,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Log.d("er",newCal.toString());
                 setDate = newCal;
                 //Log.d("er",setDate.toString());
+
                 break;
 
         }
-        mMap.clear();
-        CreateMarkers();
+
 
     }
 

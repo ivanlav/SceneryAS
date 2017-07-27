@@ -26,14 +26,17 @@ public class FilterActivity extends AppCompatActivity {
 
     private ArrayList<FilterItem> filterItemArrayList;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.filterlayout);
 
         Bundle b = getIntent().getExtras();
-        filterItemArrayList = (ArrayList<FilterItem>) b.getSerializable("fil");
+
+        if(savedInstanceState != null){
+            filterItemArrayList = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");}
+        else{
+            filterItemArrayList = (ArrayList<FilterItem>) b.getSerializable("fil");}
 
         mRecyclerView = (RecyclerView) findViewById(R.id.filter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -52,6 +55,13 @@ public class FilterActivity extends AppCompatActivity {
         });
 
 
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        outState.putSerializable("filters",filterItemArrayList);
+        super.onSaveInstanceState(outState);
 
     }
 

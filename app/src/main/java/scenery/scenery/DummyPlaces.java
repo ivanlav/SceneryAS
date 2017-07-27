@@ -32,14 +32,14 @@ public class DummyPlaces {
 
     public static Place[] CreateTriviaPlacesArr()
     {
-        Place trivia1 = new Place("Trivia Night","Stump Trivia Quiz","Tuesday","7:30 PM","173 Portland St, Boston 02114","Porters Bar",42.364351, -71.061644);
-        Place trivia2 = new Place("Trivia Night","Stump Trivia Quiz","Tuesday","8:00 PM","101 Atlantic Ave, Boston MA 02110", "Living Room",42.361748, -71.052309);
-        Place trivia3 = new Place("Trivia Night","Stump Trivia Quiz","Tuesday","7:00 PM", "209 Columbus Ave, Boston 02116", "Club Cafe",42.348412, -71.072322);
-        Place trivia4 = new Place("Trivia Night","Stump Trivia Quiz","Wednesday","8:30 PM","450 Commercial St, Boston MA 02109","Rocco's Cucina & Bar",42.367506, -71.053334);
-        Place trivia5 = new Place("Trivia Night","Stump Trivia Quiz","Thursday","6:00 PM","25 Union St, Boston MA 02108","Hennessey's Boston",42.361003, -71.056695);
-        Place trivia6 = new Place("Trivia Night","Stump Trivia Quiz","Friday","7:30 PM","1592 Tremont St, Boston MA 02120", "The Puddingstone Tavern",42.333464, -71.103145);
-        Place trivia7 = new Place("Trivia Night","Stump Trivia Quiz","Friday", "10:00 PM","1287 Cambridge St, Cambridge MA, 02139","Ginger Exchange",42.373691, -71.098923);
-        Place trivia8 = new Place("Trivia Night","Stump Trivia Quiz","Monday","8:00 PM","289 Causeway St, Boston MA 02114","Ducali Pizza",42.367096, -71.058082);
+        Place trivia1 = new Place("Trivia","Stump Trivia Quiz","Tuesday","7:30 PM","173 Portland St, Boston 02114","Porters Bar",42.364351, -71.061644);
+        Place trivia2 = new Place("Trivia","Stump Trivia Quiz","Tuesday","8:00 PM","101 Atlantic Ave, Boston MA 02110", "Living Room",42.361748, -71.052309);
+        Place trivia3 = new Place("Trivia","Stump Trivia Quiz","Tuesday","7:00 PM", "209 Columbus Ave, Boston 02116", "Club Cafe",42.348412, -71.072322);
+        Place trivia4 = new Place("Trivia","Stump Trivia Quiz","Wednesday","8:30 PM","450 Commercial St, Boston MA 02109","Rocco's Cucina & Bar",42.367506, -71.053334);
+        Place trivia5 = new Place("Trivia","Stump Trivia Quiz","Thursday","6:00 PM","25 Union St, Boston MA 02108","Hennessey's Boston",42.361003, -71.056695);
+        Place trivia6 = new Place("Trivia","Stump Trivia Quiz","Friday","7:30 PM","1592 Tremont St, Boston MA 02120", "The Puddingstone Tavern",42.333464, -71.103145);
+        Place trivia7 = new Place("Trivia","Stump Trivia Quiz","Friday", "10:00 PM","1287 Cambridge St, Cambridge MA, 02139","Ginger Exchange",42.373691, -71.098923);
+        Place trivia8 = new Place("Trivia","Stump Trivia Quiz","Monday","8:00 PM","289 Causeway St, Boston MA 02114","Ducali Pizza",42.367096, -71.058082);
 
         Place[] newPlaceArr = new Place[8];
         newPlaceArr[0] = trivia1;

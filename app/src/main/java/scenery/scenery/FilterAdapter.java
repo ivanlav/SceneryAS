@@ -9,6 +9,7 @@ import java.util.List;
  */
 
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder>{
 
     private ArrayList<FilterItem> fiList;
+
 
     public FilterAdapter(ArrayList<FilterItem> filteritems){
         this.fiList = filteritems;

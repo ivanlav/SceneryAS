@@ -2,6 +2,8 @@ package scenery.scenery;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import android.app.DatePickerDialog;
@@ -37,7 +39,11 @@ public class PickDate extends AppCompatActivity {
         dateView = (TextView) findViewById(R.id.textView3);
 
         Bundle b = getIntent().getExtras();
-        calendar = (Calendar) b.getSerializable("cal");
+
+        if(savedInstanceState != null){
+            calendar =  (Calendar) savedInstanceState.getSerializable("calendar");}
+        else {
+        calendar = (Calendar) b.getSerializable("cal");}
 
         showDate();
 
@@ -114,6 +120,13 @@ public class PickDate extends AppCompatActivity {
                 .append(day).append("/").append(year));
 
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+
+        outState.putSerializable("calendar",calendar);
+        super.onSaveInstanceState(outState);
     }
 
     private void saveDate(){

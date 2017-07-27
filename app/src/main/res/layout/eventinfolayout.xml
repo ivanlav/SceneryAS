@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="4dp"
+    android:background="@drawable/layoutbg">
+
+    <ImageView
+        android:id="@+id/eventicon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        app:srcCompat="@mipmap/mic_icon" />
+
+
+    <TextView
+        android:id="@+id/eventtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/eventicon"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/eventinfotext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/eventtitle"
+        android:layout_toRightOf="@id/eventicon"
+        android:text="TextView" />
+
+</RelativeLayout>
