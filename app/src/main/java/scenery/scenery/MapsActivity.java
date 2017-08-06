@@ -53,22 +53,11 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -90,9 +79,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<FilterItem> filters;
     private Location mLastLocation;
     private boolean mapReady = false;
-    public Place lastMarkerPlace;
-    public float lastZoom;
-    public ArrayList<Place> beginPlaces;
+    private Place lastMarkerPlace;
+    private float lastZoom;
+    private ArrayList<Place> beginPlaces;
 
     private Calendar setDate;
     //public LatLng currLoc;
@@ -172,8 +161,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putFloat("zoom", lastZoom);
         outState.putSerializable("places",beginPlaces);
         super.onSaveInstanceState(outState);
-
-
     }
 
     @Override
@@ -280,7 +267,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
     }
 
     public void centerMarker(Marker marker) {
@@ -330,12 +316,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void CreateMarkers() {
 
-
         mMap.clear();
         setDateText();
 
         if (beginPlaces == null) {
-
 
             try {
                 beginPlaces = DummyPlaces.parseSheet();
@@ -358,23 +342,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
 
-
         }else {
             for (Place p : beginPlaces) {
                // Log.e("plac",p.Name);
-
                 if(p.Latitude != null) {
                     AddMarker(p, setMarkerIcon(p));
                 }
             }
         }
-
-
-    }
-
-
         /*
-
         if(filters.get(0).getChecked()) {
             CreateComedyMarkers();
         }
@@ -384,9 +360,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         */
 
         //createInfoWindows();
-
-
-
+    }
 
     private void setDateText(){
 
@@ -398,28 +372,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView dateText = (TextView) findViewById(R.id.datetext);
         dateText.setText(new StringBuilder().append("Viewing events for: ").append(ConvertDay(dow) + ", ").append(month + 1).append("/")
                 .append(day).append("/").append(year));
-    }
-
-    public String ConvertDay(int i){
-        String dateString = "";
-        switch(i){
-            case(1): dateString = "Sunday";
-                break;
-            case(2): dateString = "Monday";
-                break;
-            case(3): dateString = "Tuesday";
-                break;
-            case(4): dateString = "Wednesday";
-                break;
-            case(5): dateString = "Thursday";
-                break;
-            case(6): dateString = "Friday";
-                break;
-            case(7): dateString = "Saturday";
-                break;
-
-        }
-        return dateString;
     }
 
     public void AddMarker(Place place, int res){
@@ -738,6 +690,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         return p1;
+    }
+
+
+    public String ConvertDay(int i){
+        String dateString = "";
+        switch(i){
+            case(1): dateString = "Sunday";
+                break;
+            case(2): dateString = "Monday";
+                break;
+            case(3): dateString = "Tuesday";
+                break;
+            case(4): dateString = "Wednesday";
+                break;
+            case(5): dateString = "Thursday";
+                break;
+            case(6): dateString = "Friday";
+                break;
+            case(7): dateString = "Saturday";
+                break;
+
+        }
+        return dateString;
     }
 
     private String nameConvert (String string){
