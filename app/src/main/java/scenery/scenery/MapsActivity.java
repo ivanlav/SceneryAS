@@ -6,7 +6,10 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Debug;
 import android.provider.ContactsContract;
@@ -25,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -49,15 +53,29 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener{
+        LocationListener {
 
     private static final int FILTER_RESULT = 1;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
@@ -72,32 +90,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<FilterItem> filters;
     private Location mLastLocation;
     private boolean mapReady = false;
+    public Place lastMarkerPlace;
+    public float lastZoom;
+    public ArrayList<Place> beginPlaces;
 
-
-   private Calendar setDate;
+    private Calendar setDate;
     //public LatLng currLoc;
-
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e("ACTIVITY:","CREATE");
+        Log.e("ACTIVITY:", "CREATE");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
 
-
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             setDate = (Calendar) savedInstanceState.getSerializable("calendar");
-            filters = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");}
-        else{
+            filters = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");
+            lastMarkerPlace = (Place) savedInstanceState.getSerializable("lastPlace");
+            lastZoom = savedInstanceState.getFloat("zoom");
+            beginPlaces = (ArrayList<Place>) savedInstanceState.getSerializable("places");
+        } else {
             createFilterList();
-            setDate =Calendar.getInstance();
+            setDate = Calendar.getInstance();
         }
 
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -110,49 +130,51 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    protected void onStop(){
-
+    protected void onStop() {
         super.onStop();
-        Log.e("ACTIVITY:","STOP");
+        Log.e("ACTIVITY:", "STOP");
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
-        if(mapReady){
+        if (mapReady) {
+
             CreateMarkers();
         }
-        Log.e("ACTIVITY:","RESUME");
+        Log.e("ACTIVITY:", "RESUME");
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
-        Log.e("ACTIVITY:","START");
+        Log.e("ACTIVITY:", "START");
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
-        Log.e("ACTIVITY:","PAUSE");
+        Log.e("ACTIVITY:", "PAUSE");
     }
+
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
-        Log.e("ACTIVITY:","DESTROY");
+        Log.e("ACTIVITY:", "DESTROY");
     }
 
-
     @Override
-    protected void onSaveInstanceState(Bundle outState){
-        outState.putSerializable("calendar",setDate);
-        outState.putSerializable("filters",filters);
-
+    protected void onSaveInstanceState(Bundle outState) {
+        lastZoom = mMap.getCameraPosition().zoom;
+        outState.putSerializable("calendar", setDate);
+        outState.putSerializable("filters", filters);
+        outState.putSerializable("lastPlace", lastMarkerPlace);
+        outState.putFloat("zoom", lastZoom);
+        outState.putSerializable("places",beginPlaces);
         super.onSaveInstanceState(outState);
 
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -161,8 +183,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -174,17 +194,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             case R.id.action_filter:
                 // User chose the "Filter" action
+                clearInfo();
                 Intent filterIntent = new Intent(MapsActivity.this, FilterActivity.class);
-                filterIntent.putExtra("fil",filters);
-                startActivityForResult(filterIntent,FILTER_RESULT);
+                filterIntent.putExtra("fil", filters);
+                startActivityForResult(filterIntent, FILTER_RESULT);
 
                 return true;
 
             case R.id.action_calendar:
                 // User chose the "Filter" action
+                clearInfo();
                 Intent calendarIntent = new Intent(MapsActivity.this, PickDate.class);
-                calendarIntent.putExtra("cal",setDate);
-                startActivityForResult(calendarIntent,CALENDAR_RESULT);
+                calendarIntent.putExtra("cal", setDate);
+                startActivityForResult(calendarIntent, CALENDAR_RESULT);
                 return true;
 
             default:
@@ -194,19 +216,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
     }
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mapReady = true;
-        Log.e("ACTIVITY:","MAPREADY");
+        Log.e("ACTIVITY:", "MAPREADY");
 
         try {
             // Customise the styling of the base map using a JSON object defined
@@ -225,8 +239,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
 
-
-
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -236,26 +248,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 buildGoogleApiClient();
                 mMap.setMyLocationEnabled(true);
-            }
-            else {
+            } else {
                 Log.d("AFL", "PERMISSION CHECK NOT COMPLETE");
             }
-        }
-        else {
+        } else {
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
 
-
-        MoveMap(startLoc, false, 12);
+        if (lastMarkerPlace == null) {
+            MoveMap(startLoc, false, 12);
+        } else {
+            MoveMap(new LatLng(lastMarkerPlace.Latitude, lastMarkerPlace.Longitude), false, lastZoom);
+            setInfoWindow(lastMarkerPlace);
+        }
 
         CreateMarkers();
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                setInfoWindow(marker);
-                MoveMap(marker.getPosition(),true,mMap.getCameraPosition().zoom);
+                centerMarker(marker);
                 return true;
             }
         });
@@ -263,14 +276,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
-                if(info.getVisibility() == RelativeLayout.VISIBLE){
-                    info.setVisibility(RelativeLayout.INVISIBLE);
-                }
+                clearInfo();
             }
         });
+
+
     }
 
+    public void centerMarker(Marker marker) {
+
+        Place mPlace = (Place) marker.getTag();
+        setInfoWindow(mPlace);
+        MoveMap(marker.getPosition(), true, mMap.getCameraPosition().zoom);
+    }
+
+    public void clearInfo() {
+        RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
+        if (info.getVisibility() == RelativeLayout.VISIBLE) {
+            info.setVisibility(RelativeLayout.INVISIBLE);
+        }
+        lastMarkerPlace = null;
+    }
 
     public void SetUpMap() {
 
@@ -282,7 +308,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void MoveMap(LatLng location, boolean animateCam,float zoom) {
+    public void MoveMap(LatLng location, boolean animateCam, float zoom) {
 
         CameraPosition.Builder builder = CameraPosition.builder();
 
@@ -302,11 +328,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void CreateMarkers(){
+    public void CreateMarkers() {
 
 
         mMap.clear();
         setDateText();
+
+        if (beginPlaces == null) {
+
+
+            try {
+                beginPlaces = DummyPlaces.parseSheet();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            if (beginPlaces != null) {
+                for (Place p : beginPlaces) {
+
+                    //Log.e("latlng", p.Address);
+
+                    LatLng ll = getLocationFromAddress(getBaseContext(), p.Address);
+                    if (ll != null) {
+                        p.Latitude = ll.latitude;
+                        p.Longitude = ll.longitude;
+                        AddMarker(p, setMarkerIcon(p));
+                    }
+                }
+
+            }
+
+
+        }else {
+            for (Place p : beginPlaces) {
+               // Log.e("plac",p.Name);
+
+                if(p.Latitude != null) {
+                    AddMarker(p, setMarkerIcon(p));
+                }
+            }
+        }
+
+
+    }
+
+
+        /*
 
         if(filters.get(0).getChecked()) {
             CreateComedyMarkers();
@@ -314,11 +381,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(filters.get(1).getChecked()) {
             CreateTriviaMarkers();
         }
+        */
 
         //createInfoWindows();
 
 
-    }
+
 
     private void setDateText(){
 
@@ -354,7 +422,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return dateString;
     }
 
-
     public void AddMarker(Place place, int res){
         Log.e("Mar", "First: " + ConvertDay(setDate.get(Calendar.DAY_OF_WEEK)));
         Log.e("Mar", "Second: " + place.Day);
@@ -362,12 +429,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             Log.e("Mar", "AddMarker: ");
 
-            Marker marker = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(place.Latitude, place.Longitude))
-                    .title(place.Name)
-                    .icon(BitmapDescriptorFactory.fromResource(res))
-                    .snippet(place.Day + ", " + place.Time + "\n" + place.Establishment + "\n" + place.Address));
-            marker.setTag(place);
+            if(checkFilter(place)) {
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(place.Latitude, place.Longitude))
+                        .title(place.Name)
+                        .icon(BitmapDescriptorFactory.fromResource(res)));
+                marker.setTag(place);
+            }
         }
     }
 
@@ -393,37 +462,77 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public int setMarkerIcon(Place place){
 
-        if(place.Type.equals("Comedy")){
+        if(place.Type.equals("Comedy Open Mic")){
             return R.mipmap.mic_icon;
         }
         else if(place.Type.equals("Trivia")){
             return R.mipmap.trivia_icon;
+        }else if(place.Type.equals("Meal Deals")){
+            return R.mipmap.meals;
+        }else if(place.Type.equals("Karaoke")){
+            return R.mipmap.karaoke;
+        }else if(place.Type.equals("Live Music")){
+            return R.mipmap.livemusic;
+        }else if(place.Type.equals("Dancing")){
+            return R.mipmap.danceicon;
         }
         else return R.mipmap.mic_icon;
     }
 
-    public void setInfoWindow(Marker marker){
+    public void setInfoWindow(final Place place){
 
         RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
 
-        if(info.getVisibility() == RelativeLayout.INVISIBLE){
+        if(info.getVisibility() == View.INVISIBLE){
             info.setVisibility(RelativeLayout.VISIBLE);
         }
-
-        Place place = (Place) marker.getTag();
 
         TextView title = (TextView) findViewById(R.id.eventtitle);
         title.setTextColor(Color.BLACK);
         title.setGravity(Gravity.CENTER);
-        title.setTypeface(null, Typeface.BOLD);
-        title.setText(marker.getTitle());
+        title.setText(place.Name);
 
         TextView snippet = (TextView) findViewById(R.id.eventinfotext);
         snippet.setTextColor(Color.GRAY);
-        snippet.setText(marker.getSnippet());
+        snippet.setText(place.Day + ", " + place.Time + "\n" + place.Establishment);
 
         ImageView icon = (ImageView) findViewById(R.id.eventicon);
         icon.setImageResource(setMarkerIcon(place));
+
+        lastMarkerPlace = place;
+
+        info.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Do nothing yet
+            }
+        });
+
+        Button directions = (Button) findViewById(R.id.directionsButton);
+
+        directions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getDirections(place);
+            }
+        });
+    }
+
+    private void getDirections(Place place){
+        Uri gmmIntentUri = Uri.parse("google.navigation:q="+place.Address);
+
+        Location placeLoc = new Location("");
+        placeLoc.setLatitude(place.Latitude);
+        placeLoc.setLongitude(place.Longitude);
+        float distance = mLastLocation.distanceTo(placeLoc);
+        float mile = 1609;
+        Log.e("distance",Float.toString(distance));
+        if(distance < mile){
+            gmmIntentUri = Uri.parse("google.navigation:q="+place.Address+"&mode=w");
+        }
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
     }
 
     public void createInfoWindows() {
@@ -494,7 +603,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         mLocationRequest = new LocationRequest();
@@ -537,7 +645,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         mGoogleApiClient.connect();
     }
-
 
     public boolean checkLocationPermission(){
         if (ContextCompat.checkSelfPermission(this,
@@ -603,6 +710,75 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    public LatLng getLocationFromAddress(Context context, String strAddress) {
+
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            // May throw an IOException
+            address = coder.getFromLocationName(strAddress, 1);
+            if (address == null || address.size() == 0) {
+                return null;
+            }
+            try{
+            Address location = address.get(0);
+                location.getLatitude();
+                location.getLongitude();
+
+                p1 = new LatLng(location.getLatitude(), location.getLongitude() );}
+            catch (IndexOutOfBoundsException ex) {
+                ex.printStackTrace();
+            }
+
+        } catch (IOException ex) {
+
+            ex.printStackTrace();
+        }
+
+        return p1;
+    }
+
+    private String nameConvert (String string){
+
+        if(string.equals("Comedy Open Mic")) {
+            return "Comedy";
+        }
+        if(string.equals("Trivia")) {
+            return "Trivia";
+        }
+        if(string.equals("Meal Deals")) {
+            return "Meals";
+        }
+        if(string.equals("Karaoke")) {
+            return "Karaoke";
+        }
+        if(string.equals("Live Music")) {
+            return "Music";
+        }
+        if(string.equals("Dancing")) {
+            return "Dance";
+        }
+        else return "";
+
+    }
+
+    private boolean checkFilter(Place place){
+
+        String placeType = nameConvert(place.Type);
+
+        for(FilterItem p : filters){
+            if(p.getName().equals(placeType) && p.getChecked()){
+                return true;
+            }
+        }
+        return false;
+
+
+
+    }
+
     private void createFilterList(){
 
         ArrayList<FilterItem> filters = new ArrayList<FilterItem>();
@@ -611,9 +787,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         filters.add(new FilterItem("Trivia", true));
         filters.add(new FilterItem("Karaoke", false));
         filters.add(new FilterItem("Music", false));
+        filters.add(new FilterItem("Meals", false));
+        filters.add(new FilterItem("Dance",false));
 
         this.filters = filters;
     }
+
+
+
+
+
 
 
 }

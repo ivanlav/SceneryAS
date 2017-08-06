@@ -20,13 +20,19 @@ android {
             debuggable true
         }
     }
+
+    packagingOptions {
+        pickFirst  'META-INF/LICENSE'
+    }
 }
 repositories {
     mavenCentral()
 }
 
+
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -37,8 +43,8 @@ dependencies {
     compile 'com.thoughtbot:expandablerecyclerview:1.3'
     compile 'com.thoughtbot:expandablecheckrecyclerview:1.4'
     compile 'com.facebook.android:facebook-android-sdk:4.24.0'
-
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
 }

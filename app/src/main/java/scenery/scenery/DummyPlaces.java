@@ -1,13 +1,23 @@
 package scenery.scenery;
 
+import android.util.Log;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
 /**
  * Created by Ivan on 7/5/2017.
  */
 
 public class DummyPlaces {
 
-    public static Place[] CreateComedyPlacesArr()
-    {
+    public static Place[] CreateComedyPlacesArr() {
         Place comedy1 = new Place("Comedy","Cheapshots Comedy", "Monday", "7:30PM", "335 Somerville Ave, Somerville, MA 02143", "Sally O'Briens", 42.380769, -71.097994);
         Place comedy2 = new Place("Comedy","Ziti's Express", "Monday", "5:30PM", "140 Tremont St, Boston, MA 02111", "Ziti's Express", 42.35563, -71.062576);
         Place comedy3 = new Place("Comedy","Show Me the Mic", "Tuesday", "6:00PM", "356 Chestnut Hill Ave, Brighton, MA 02135", "Agoro's Pizza Bar", 42.336812, -71.151572);
@@ -53,4 +63,103 @@ public class DummyPlaces {
 
         return newPlaceArr;
     }
+
+    public static ArrayList<Place> parseSheet() throws JSONException {
+
+        JSONArray jsonArray = new JSONArray("[{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Cheapshots Comedy\",\"Location\":\"Sally O'Briens\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"7:30:00 PM\",\"Address\":\"335 Somerville Avenue\",\"City\":\"Somerville MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Ziti's Express\",\"Location\":\"Ziti's Express\",\"Day\":\"Monday\",\"List Time\":\"5:00:00 PM\",\"Start Time\":\"5:30:00 PM\",\"Address\":\"140 Tremont Street\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Green Dragon\",\"Location\":\"Green Dragon\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"9:00:00 PM\",\"Address\":\"11 Marshall Street\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Thunderbar Comedy\",\"Location\":\"Wonderbar\",\"Day\":\"Thursday\",\"List Time\":\"6:00:00 PM\",\"Start Time\":\"6:30:00 PM\",\"Address\":\"186 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Comics Anonymous Open Mic\",\"Location\":\"The Hideout\",\"Day\":\"Thursday\",\"List Time\":\"7:30:00 PM\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"340 Faneuil Hall Marketplace\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Show Me The Mic\",\"Location\":\"Agoro's Pizzabar\",\"Day\":\"Tuesday\",\"List Time\":\"6:30:00 PM\",\"Start Time\":\"7:00:00 PM\",\"Address\":\"356 Chestnut Hill Ave\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"#MidEastCorn\",\"Location\":\"Middle East Corner Bar\",\"Day\":\"Tuesday\",\"List Time\":\"Pre-Booked\",\"Start Time\":\"9:00:00 PM\",\"Address\":\"472 Mass. Ave\",\"City\":\"Cambridge MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Tavern at the End of the World\",\"Location\":\"Tavern at the End of the World\",\"Day\":\"Wednesday\",\"List Time\":\"7:30:00 PM\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"108 Cambridge Street\",\"City\":\"Charlestown MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Comedy Lottery\",\"Location\":\"ImprovBoston\",\"Day\":\"Wednesday\",\"List Time\":\"9:30:00 PM\",\"Start Time\":\"10:00:00 PM\",\"Address\":\"40 Prospect Street\",\"City\":\"Cambridge MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"The Burren\",\"Location\":\"The Burren\",\"Day\":\"Wednesday\",\"List Time\":\"Pre-Booked\",\"Start Time\":\"10:00:00 PM\",\"Address\":\"247 Elm Street\",\"City\":\"Somerville MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Iron Furnace\",\"Location\":\"Iron Furnace\",\"Day\":\"Sunday\",\"List Time\":\"\",\"Start Time\":\"\",\"Address\":\"1495 Hancock St\",\"City\":\"Quincy MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Midway or the Highway\",\"Location\":\"Midway Café\",\"Day\":\"Sunday\",\"List Time\":\"Lotto\",\"Start Time\":\"9:00:00 PM\",\"Address\":\"3496 Washington St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"Turn Down That Racquet Open Mic\",\"Location\":\"406 VFW Drive\",\"Day\":\"Tuesday\",\"List Time\":\"6:30:00 PM\",\"Start Time\":\"7:00:00 PM\",\"Address\":\"406 VFW Drive\",\"City\":\"Rockland MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"The Winner's Circle\",\"Location\":\"The Winner's Circle\",\"Day\":\"Tuesday\",\"List Time\":\"Pre-Booked\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"211 Elm Street\",\"City\":\"Salisbury MA\"},\n" +
+                "{\"Type\":\"Comedy Open Mic\",\"Event Name\":\"The Open Mic at Mikey B's\",\"Location\":\"Mikey B's\",\"Day\":\"Tuesday\",\"List Time\":\"7:30:00 PM\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"989 Victoria Street\",\"City\":\"New Bedford MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Porters Bar\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"7:30:00 PM\",\"Address\":\"173 Portland St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"The Living Room\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"101 Atlantic Ave\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Club Cafe\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"7:00:00 PM\",\"Address\":\"209 Columbus Ave\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Kinsale\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"7:00:00 PM\",\"Address\":\"2 Center Plz\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Questionnairey Survey Game\",\"Location\":\"Modern Underground Bar\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"7:30:00 PM\",\"Address\":\"263 Hanover St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Rocco's Cucina & Bar\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"8:30:00 PM\",\"Address\":\"450 Commercial Street\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Hennessey's Boston\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"6:00:00 PM\",\"Address\":\"25 Union St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Coogan's\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"7:00:00 PM\",\"Address\":\"171 Milk St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Modern Underground Bar\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"7:30:00 PM\",\"Address\":\"263 Hanover St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"99 Restaurant - Charlestown\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"7:30:00 PM\",\"Address\":\"29-31 Austin St\",\"City\":\"Charlestown MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Ginger Exchange\",\"Day\":\"Friday\",\"List Time\":\"\",\"Start Time\":\"10:00:00 PM\",\"Address\":\"1287 Cambridge St\",\"City\":\"Cambridge MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"The Puddingstone Tavern\",\"Day\":\"Friday\",\"List Time\":\"\",\"Start Time\":\"7:30:00 PM\",\"Address\":\"1592 Tremont St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Questionnairey Survey Game\",\"Location\":\"Ocean Kai\",\"Day\":\"Friday\",\"List Time\":\"\",\"Start Time\":\"7:00:00 PM\",\"Address\":\"300 Lincoln St\",\"City\":\"Hingham MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Questionnairey Survey Game\",\"Location\":\"6B Lounge\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"6B Beacon St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia Quiz\",\"Location\":\"Ducali Pizza\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"8:00:00 PM\",\"Address\":\"289 Causeway St\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Dancing\",\"Event Name\":\"90's Night with DJ Phat Mike\",\"Location\":\"Common Ground\",\"Day\":\"Friday\",\"List Time\":\"\",\"Start Time\":\"10:00 PM - Close\",\"Address\":\"85 Harvard Ave\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Dancing\",\"Event Name\":\"Millennium Night with DJ Phat Mike\",\"Location\":\"Common Ground\",\"Day\":\"Saturday\",\"List Time\":\"\",\"Start Time\":\"10:00 PM - Close\",\"Address\":\"85 Harvard Ave\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Dancing\",\"Event Name\":\"Thirsty Thursday at Wonder Bar\",\"Location\":\"Wonder Bar - Allston\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"\",\"Address\":\"186 Harvard Avenue\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Games\",\"Event Name\":\"Bar Bingo\",\"Location\":\"Article 24\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM\",\"Address\":\"458 Western Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Karaoke\",\"Event Name\":\"Article Karaoke\",\"Location\":\"Article 24\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"10:00 PM\",\"Address\":\"458 Western Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Friday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Saturday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Sunday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Live Music at O'Briens Pub\",\"Location\":\"O'Brien's Pub\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"3 Harvard Avenue\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Live Music\",\"Event Name\":\"Super Sessions\",\"Location\":\"Common Ground\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"Varies\",\"Address\":\"85 Harvard Ave\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"$7 Sandwiches with Fries or Salad\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Friday\",\"List Time\":\"\",\"Start Time\":\"11:30 AM - 2:00 PM\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"$7 Sandwiches with Fries or Salad\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"11:30 AM - 2:00 PM\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"All you can eat Breakfast for $5.99\",\"Location\":\"Common Ground\",\"Day\":\"Saturday\",\"List Time\":\"\",\"Start Time\":\"10:00 AM - 2:00 PM\",\"Address\":\"85 Harvard Ave\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"Brunch Buffet for $10.99\",\"Location\":\"Common Ground\",\"Day\":\"Sunday\",\"List Time\":\"\",\"Start Time\":\"10:00 AM - 2:00 PM\",\"Address\":\"85 Harvard Ave\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"$7 Sandwiches with Fries or Salad\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"11:30 AM - 2:00 PM\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"$6 Cheeseburgers w/ Fries\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"ALL DAY\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"$7 Sandwiches with Fries or Salad\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"11:30 AM - 2:00 PM\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Meal Deals\",\"Event Name\":\"$7 Sandwiches with Fries or Salad\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Wednesday\",\"List Time\":\"\",\"Start Time\":\"11:30 AM - 2:00 PM\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Mixed Open Mic\",\"Event Name\":\"Article Open Mic\",\"Location\":\"Article 24\",\"Day\":\"Sunday\",\"List Time\":\"\",\"Start Time\":\"9:00 PM\",\"Address\":\"458 Western Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Geeks Who Drink Trivia\",\"Location\":\"Harry's Bar and Grill\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM\",\"Address\":\"1430 Commonwealth Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Sex, Drugs & Rock and Roll Trivia\",\"Location\":\"Common Ground\",\"Day\":\"Monday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM - 10:00 PM\",\"Address\":\"85 Harvard Ave\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Questionnairey Survey Game\",\"Location\":\"T's Pub\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM\",\"Address\":\"973 Commonwealth Avenue\",\"City\":\"Boston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"ThinkTank Trivia\",\"Location\":\"Common Ground\",\"Day\":\"Thursday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM - 10:00 PM\",\"Address\":\"85 Harvard Ave\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia\",\"Location\":\"Article 24\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"9:00 PM\",\"Address\":\"458 Western Avenue\",\"City\":\"Brighton MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Geeks Who Drink Trivia\",\"Location\":\"Common Ground\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM - 10:00 PM\",\"Address\":\"85 Harvard Ave,\",\"City\":\"Allston MA\"},\n" +
+                "{\"Type\":\"Trivia\",\"Event Name\":\"Stump Trivia\",\"Location\":\"Tavern in the Square\",\"Day\":\"Tuesday\",\"List Time\":\"\",\"Start Time\":\"8:00 PM - 10:00 PM\",\"Address\":\"161 Brighton Avenue\",\"City\":\"Allston MA\"}]");
+
+        ArrayList<Place> placeArr = new ArrayList<Place>();
+
+        for(int i=0; i<jsonArray.length(); i++){
+
+
+            JSONObject obj = jsonArray.getJSONObject(i);
+
+            String name = obj.getString("Event Name");
+            String type = obj.getString("Type");
+            String location = obj.getString("Location");
+            String day = obj.getString("Day");
+            String time = obj.getString("Start Time");
+
+            String address = obj.getString("Address");
+            String city = obj.getString("City");
+
+            String fulladdress = address + ", " + city;
+
+            Place newPlace = new Place(type,name,day,time,fulladdress,location);
+
+            placeArr.add(newPlace);
+
+            /*
+            Log.e("json",name);
+            Log.e("json",type);
+            Log.e("json",location);
+            Log.e("json",day);
+            Log.e("json",address);
+            */
+
+
+        }
+        return placeArr;
+    }
+
+
 }
