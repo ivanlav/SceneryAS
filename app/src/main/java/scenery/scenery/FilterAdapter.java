@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +53,8 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
 
         viewHolder.chkSelected.setTag(fiList.get(position));
 
+        viewHolder.icon.setImageResource(setMarkerIcon(fiList.get(position).getName()));
+
 
         viewHolder.chkSelected.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -83,6 +86,8 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
 
         public CheckBox chkSelected;
 
+        public ImageView icon;
+
         public FilterItem singleItem;
 
         public ViewHolder(View itemLayoutView) {
@@ -93,6 +98,8 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
             chkSelected = (CheckBox) itemLayoutView
                     .findViewById(R.id.filterCheckBox);
 
+            icon = (ImageView) itemLayoutView
+                    .findViewById(R.id.filterIcon);
         }
 
     }
@@ -101,4 +108,26 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
     public ArrayList<FilterItem> getFilterList() {
         return fiList;
     }
+
+
+    public int setMarkerIcon(String placeName){
+
+        if(placeName.equals("Comedy Open Mic")){
+            return R.mipmap.mic_icon;
+        }
+        else if(placeName.equals("Trivia")){
+            return R.mipmap.trivia_icon;
+        }else if(placeName.equals("Meal Deals")){
+            return R.mipmap.meals;
+        }else if(placeName.equals("Karaoke")){
+            return R.mipmap.karaoke;
+        }else if(placeName.equals("Live Music")){
+            return R.mipmap.livemusic;
+        }else if(placeName.equals("Dancing")){
+            return R.mipmap.danceicon;
+        }
+        else return R.mipmap.mic_icon;
+    }
 }
+
+

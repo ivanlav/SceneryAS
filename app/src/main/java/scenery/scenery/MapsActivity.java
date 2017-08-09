@@ -86,14 +86,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Calendar setDate;
     //public LatLng currLoc;
 
-
+    //first to run
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("ACTIVITY:", "CREATE");
         super.onCreate(savedInstanceState);
+
+        //set layout
         setContentView(R.layout.activity_maps);
 
-
+        //if activity was previously stopped, save and restore data
         if (savedInstanceState != null) {
             setDate = (Calendar) savedInstanceState.getSerializable("calendar");
             filters = (ArrayList<FilterItem>) savedInstanceState.getSerializable("filters");
@@ -105,15 +107,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             setDate = Calendar.getInstance();
         }
 
+        //set toolbar
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
 
+        //set up map
         SetUpMap();
 
     }
@@ -132,6 +135,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             CreateMarkers();
         }
         Log.e("ACTIVITY:", "RESUME");
+        //redraws markers when activity resumes
     }
 
     @Override
@@ -152,6 +156,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e("ACTIVITY:", "DESTROY");
     }
 
+    //saves data when activity is stopped
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         lastZoom = mMap.getCameraPosition().zoom;
@@ -204,11 +209,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    //called when map loads, no major code should run before this is called
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mapReady = true;
         Log.e("ACTIVITY:", "MAPREADY");
 
+        //set map style to particular json style file
         try {
             // Customise the styling of the base map using a JSON object defined
             // in a raw resource file.
@@ -222,6 +229,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (Resources.NotFoundException e) {
             Log.e(TAG, "Can't find style. Error: ", e);
         }
+
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
@@ -243,6 +251,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMyLocationEnabled(true);
         }
 
+        //sets location to last marker location, or default location
         if (lastMarkerPlace == null) {
             MoveMap(startLoc, false, 12);
         } else {
@@ -252,6 +261,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         CreateMarkers();
 
+        //centers marker and creates info window on marker click
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -260,6 +270,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        //clears info window on map click
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -276,6 +287,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         MoveMap(marker.getPosition(), true, mMap.getCameraPosition().zoom);
     }
 
+    //clear existing info window
     public void clearInfo() {
         RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
         if (info.getVisibility() == RelativeLayout.VISIBLE) {
@@ -314,6 +326,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    //create markers from json in DummyPlaces class
     public void CreateMarkers() {
 
         mMap.clear();
@@ -332,12 +345,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     //Log.e("latlng", p.Address);
 
-                    LatLng ll = getLocationFromAddress(getBaseContext(), p.Address);
+                    LatLng ll = new LatLng(p.Latitude,p.Longitude);
+                    AddMarker(p, setMarkerIcon(p));
+                    /*LatLng ll = getLocationFromAddress(getBaseContext(), p.Address);
                     if (ll != null) {
                         p.Latitude = ll.latitude;
                         p.Longitude = ll.longitude;
                         AddMarker(p, setMarkerIcon(p));
                     }
+                    */
                 }
 
             }
@@ -392,26 +408,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void CreateTriviaMarkers() {
-
-        Place[] newPlaceArr = DummyPlaces.CreateTriviaPlacesArr();
-        for (Place i : newPlaceArr
-                ) {
-            AddMarker(i,setMarkerIcon(i));
-
-        }
-    }
-
-    public void CreateComedyMarkers() {
-
-            Place[] newPlaceArr = DummyPlaces.CreateComedyPlacesArr();
-            for (Place i : newPlaceArr
-                    ) {
-                AddMarker(i,setMarkerIcon(i));
-            }
-
-    }
-
     public int setMarkerIcon(Place place){
 
         if(place.Type.equals("Comedy Open Mic")){
@@ -431,6 +427,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else return R.mipmap.mic_icon;
     }
 
+    //draw info window
     public void setInfoWindow(final Place place){
 
         RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
@@ -470,6 +467,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    //adds directions that open in Google Navigation
     private void getDirections(Place place){
         Uri gmmIntentUri = Uri.parse("google.navigation:q="+place.Address);
 
@@ -487,48 +485,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         startActivity(mapIntent);
     }
 
-    public void createInfoWindows() {
-
-        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
-
-            @Override
-            public View getInfoWindow(Marker arg0) {
-                return null;
-            }
-
-            @Override
-            public View getInfoContents(Marker marker) {
-
-                /*
-
-                Context context = getApplicationContext(); //or getActivity(), YourActivity.this, etc.
-
-
-                LinearLayout info = new LinearLayout(context);
-                info.setOrientation(LinearLayout.VERTICAL);
-
-                TextView title = new TextView(context);
-                title.setTextColor(Color.BLACK);
-                title.setGravity(Gravity.CENTER);
-                title.setTypeface(null, Typeface.BOLD);
-                title.setText(marker.getTitle());
-
-                TextView snippet = new TextView(context);
-                snippet.setTextColor(Color.GRAY);
-                snippet.setText(marker.getSnippet());
-
-
-                info.addView(title);
-                info.addView(snippet);
-
-*/
-                return null;
-
-            }
-        });
-
-    }
-
+    //called when Filter or Calendar exits, saves relevant data
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -662,6 +619,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    //converts Addresses to Coordinates, too slow, to be replaced
     public LatLng getLocationFromAddress(Context context, String strAddress) {
 
         Geocoder coder = new Geocoder(context);
@@ -692,7 +650,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return p1;
     }
 
-
     public String ConvertDay(int i){
         String dateString = "";
         switch(i){
@@ -715,33 +672,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return dateString;
     }
 
-    private String nameConvert (String string){
-
-        if(string.equals("Comedy Open Mic")) {
-            return "Comedy";
-        }
-        if(string.equals("Trivia")) {
-            return "Trivia";
-        }
-        if(string.equals("Meal Deals")) {
-            return "Meals";
-        }
-        if(string.equals("Karaoke")) {
-            return "Karaoke";
-        }
-        if(string.equals("Live Music")) {
-            return "Music";
-        }
-        if(string.equals("Dancing")) {
-            return "Dance";
-        }
-        else return "";
-
-    }
-
     private boolean checkFilter(Place place){
 
-        String placeType = nameConvert(place.Type);
+        String placeType = place.Type;
 
         for(FilterItem p : filters){
             if(p.getName().equals(placeType) && p.getChecked()){
@@ -758,12 +691,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ArrayList<FilterItem> filters = new ArrayList<FilterItem>();
 
-        filters.add(new FilterItem("Comedy", true));
+        filters.add(new FilterItem("Comedy Open Mic", true));
         filters.add(new FilterItem("Trivia", true));
-        filters.add(new FilterItem("Karaoke", false));
-        filters.add(new FilterItem("Music", false));
-        filters.add(new FilterItem("Meals", false));
-        filters.add(new FilterItem("Dance",false));
+        filters.add(new FilterItem("Karaoke", true));
+        filters.add(new FilterItem("Live Music", true));
+        filters.add(new FilterItem("Meal Deals", true));
+        filters.add(new FilterItem("Dancing",true));
 
         this.filters = filters;
     }

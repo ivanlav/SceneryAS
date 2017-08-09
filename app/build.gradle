@@ -20,6 +20,9 @@ android {
             debuggable true
         }
     }
+    dexOptions {
+        jumboMode = true
+    }
 
     packagingOptions {
         pickFirst  'META-INF/LICENSE'
