@@ -2,13 +2,16 @@ package scenery.scenery;
 
 import android.os.Parcelable;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.ClusterItem;
+
 import java.io.Serializable;
 
 /**
  * Created by Ivan on 7/5/2017.
  */
 
-public class Place implements Serializable{
+public class Place implements Serializable, ClusterItem {
 
     public String Type;
 
@@ -25,6 +28,8 @@ public class Place implements Serializable{
     public Double Latitude;
 
     public Double Longitude;
+
+    public int Icon;
 
     public Place(String Type, String Name, String Day, String Time, String Address, String Establishment, Double Lat, Double Long) {
         this.Name = Name;
@@ -64,4 +69,18 @@ public class Place implements Serializable{
     }
 
 
+    @Override
+    public LatLng getPosition() {
+        return new LatLng(Latitude,Longitude);
+    }
+
+    @Override
+    public String getTitle() {
+        return Name;
+    }
+
+    @Override
+    public String getSnippet() {
+        return Address;
+    }
 }

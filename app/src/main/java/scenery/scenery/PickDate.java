@@ -139,4 +139,11 @@ public class PickDate extends AppCompatActivity {
         setResult(MapsActivity.RESULT_OK, resultIntent);
         finish();
     }
+
+    @Override
+    public void onBackPressed(){
+
+        saveDate();
+        super.onBackPressed();
+    }
 }
