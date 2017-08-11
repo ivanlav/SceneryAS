@@ -149,6 +149,7 @@ public class MapsActivity extends AppCompatActivity implements
 
                 CreateMarkers();
                 mClusterManager.cluster();
+
             }
             Log.e("ACTIVITY:", "RESUME");
             //redraws markers when activity resumes
@@ -157,6 +158,12 @@ public class MapsActivity extends AppCompatActivity implements
         @Override
         protected void onStart() {
             super.onStart();
+            if (mapReady) {
+
+                CreateMarkers();
+                mClusterManager.cluster();
+
+            }
             Log.e("ACTIVITY:", "START");
         }
 
@@ -368,7 +375,8 @@ public class MapsActivity extends AppCompatActivity implements
     //create markers from json in DummyPlaces class
     public void CreateMarkers() {
 
-        mMap.clear();
+        //mMap.clear();
+        mClusterManager.clearItems();
         setDateText();
 
         if (beginPlaces == null) {
@@ -456,7 +464,6 @@ public class MapsActivity extends AppCompatActivity implements
     public void AddCluster(Place place){
 
         if((ConvertDay(setDate.get(Calendar.DAY_OF_WEEK))).equals(place.Day)){
-
 
             if(checkFilter(place)) {
 
@@ -765,8 +772,8 @@ public class MapsActivity extends AppCompatActivity implements
     public boolean onClusterClick(Cluster<Place> cluster) {
         clearInfo();
 
-        String firstName = cluster.getItems().iterator().next().Name;
-        Toast.makeText(this, cluster.getSize() + " (including " + firstName + ")", Toast.LENGTH_SHORT).show();
+       // String firstName = cluster.getItems().iterator().next().Name;
+        //t.makeText(this, cluster.getSize() + " (including " + firstName + ")", Toast.LENGTH_SHORT).show();
 
         LatLngBounds.Builder builder = LatLngBounds.builder();
         for (ClusterItem item : cluster.getItems()) {
@@ -878,6 +885,7 @@ public class MapsActivity extends AppCompatActivity implements
         protected boolean shouldRenderAsCluster(Cluster cluster) {
             // Always render clusters.
             return cluster.getSize() > 1;
+
         }
 
 
