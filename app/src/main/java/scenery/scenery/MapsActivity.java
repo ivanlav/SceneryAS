@@ -291,7 +291,6 @@ public class MapsActivity extends AppCompatActivity implements
             mMap.setOnCameraIdleListener(mClusterManager);
             mMap.setOnMarkerClickListener(mClusterManager);
             mMap.setOnInfoWindowClickListener(mClusterManager);
-            mMap.setMaxZoomPreference(16);
             mClusterManager.setOnClusterClickListener(this);
             mClusterManager.setOnClusterInfoWindowClickListener(this);
             mClusterManager.setOnClusterItemClickListener(this);
@@ -885,6 +884,7 @@ public class MapsActivity extends AppCompatActivity implements
         protected boolean shouldRenderAsCluster(Cluster cluster) {
             // Always render clusters.
             return cluster.getSize() > 1;
+
 
         }
 
