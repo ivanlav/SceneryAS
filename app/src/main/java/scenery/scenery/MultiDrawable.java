@@ -71,7 +71,7 @@ public class MultiDrawable extends Drawable {
                 mDrawables.get(2).draw(canvas);
                 canvas.restore();
             }
-        } else if (mDrawables.size() >= 4) {
+        }if (mDrawables.size() >= 4) {
             // Paint top right
             canvas.save();
             canvas.scale(.5f, .5f);

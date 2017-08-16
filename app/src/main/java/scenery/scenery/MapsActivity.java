@@ -711,6 +711,7 @@ public class MapsActivity extends AppCompatActivity implements
                 } else {
 
                     // Permission denied, Disable the functionality that depends on this permission.
+
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
                 return;
@@ -894,7 +895,7 @@ public class MapsActivity extends AppCompatActivity implements
             mImageView.setImageResource(place.Icon);
             //markerOptions.icon(BitmapDescriptorFactory.fromResource(place.Icon));
             Bitmap icon = mIconGenerator.makeIcon();
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(place.Name);
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
 
         @Override
@@ -906,12 +907,13 @@ public class MapsActivity extends AppCompatActivity implements
             int height = mDimension;
             List<Integer> difficons = new ArrayList<Integer>();
 
+
+
             for (Place p : cluster.getItems()) {
                 // Draw 4 at most.
                 if (placeIcons.size() == 4) break;
 
-
-                Drawable drawable = getResources().getDrawable(p.Icon);
+                Drawable drawable = getResources().getDrawable(p.Icon, getTheme());
 
                 if(difficons.contains(p.Icon) == false) {
                     difficons.add(p.Icon);
@@ -919,6 +921,7 @@ public class MapsActivity extends AppCompatActivity implements
                     placeIcons.add(drawable);
                 }
             }
+
             MultiDrawable multiDrawable = new MultiDrawable(placeIcons);
             multiDrawable.setBounds(0, 0, width, height);
 
