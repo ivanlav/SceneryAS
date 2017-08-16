@@ -511,6 +511,9 @@ public class MapsActivity extends AppCompatActivity implements
         ImageView icon = (ImageView) findViewById(R.id.eventicon);
         icon.setImageResource(setMarkerIcon(place));
 
+        ImageView nextIcon = (ImageView) findViewById(R.id.nexteventicon);
+        nextIcon.setVisibility(ImageView.INVISIBLE);
+
         lastMarkerPlace = place;
 
         info.setOnClickListener(new View.OnClickListener() {
@@ -528,6 +531,39 @@ public class MapsActivity extends AppCompatActivity implements
                 getDirections(place);
             }
         });
+    }
+
+    public void setInfoWindowArray(final ArrayList<Place> placeArr, final int index){
+
+        setInfoWindow(placeArr.get(index));
+
+        ImageView nextIcon = (ImageView) findViewById(R.id.nexteventicon);
+
+
+        int nextIndex = index + 1;
+        if(nextIndex == (placeArr.size())){
+            nextIndex = 0;
+        }
+
+        nextIcon.setImageResource(setMarkerIcon(placeArr.get(nextIndex)));
+        nextIcon.setVisibility(ImageView.VISIBLE);
+        nextIcon.setScaleX(.6f);
+        nextIcon.setScaleY(.6f);
+
+        nextIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                int nextIndex = index + 1;
+                if(nextIndex == (placeArr.size())){
+                    nextIndex = 0;
+                }
+                setInfoWindowArray(placeArr, nextIndex);
+
+            }
+        });
+
+
     }
 
     //adds directions that open in Google Navigation
@@ -571,7 +607,9 @@ public class MapsActivity extends AppCompatActivity implements
                 break;
 
         }
-
+        if(mapReady) {
+            MoveMap(startLoc, false, 12);
+        }
 
     }
 
@@ -773,10 +811,23 @@ public class MapsActivity extends AppCompatActivity implements
 
        // String firstName = cluster.getItems().iterator().next().Name;
         //t.makeText(this, cluster.getSize() + " (including " + firstName + ")", Toast.LENGTH_SHORT).show();
+        ArrayList<Place> placeArr = new ArrayList<Place>();
+
+       for(Place place : cluster.getItems()){
+           placeArr.add(place);
+       }
+
+        if(isSameLocation(cluster)){
+            Place place = placeArr.get(0);
+            setInfoWindowArray(placeArr,0);
+            MoveMap(new LatLng(place.Latitude,place.Longitude), true, mMap.getCameraPosition().zoom);
+            return true;
+        }
 
         LatLngBounds.Builder builder = LatLngBounds.builder();
         for (ClusterItem item : cluster.getItems()) {
             builder.include(item.getPosition());
+
         }
         // Get the LatLngBounds
         final LatLngBounds bounds = builder.build();
@@ -875,20 +926,35 @@ public class MapsActivity extends AppCompatActivity implements
 
             Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
-
-
-
         }
 
         @Override
         protected boolean shouldRenderAsCluster(Cluster cluster) {
             // Always render clusters.
             return cluster.getSize() > 1;
-
-
         }
 
+    }
 
+    public boolean isSameLocation(Cluster<Place> cluster){
+
+        LatLng location = null;
+
+        for (Place p : cluster.getItems()){
+            double latitude = p.Latitude;
+            double longitude = p.Longitude;
+
+            LatLng compareLocation = new LatLng(latitude,longitude);
+
+            if(location != null && !compareLocation.equals(location)){
+                Log.e("isl", "false");
+                return false;
+            }
+            location = compareLocation;
+
+        }
+        Log.e("isl", "true");
+        return true;
     }
 
 

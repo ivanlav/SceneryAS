@@ -54,16 +54,24 @@ public class MultiDrawable extends Drawable {
             canvas.translate(0, 0);
             mDrawables.get(0).draw(canvas);
             canvas.restore();
-        }
-        if (mDrawables.size() == 2) {
-            // Paint right half
+
             canvas.save();
             canvas.scale(.5f,.5f);
             //canvas.clipRect(width / 2, 0, width, height);
             canvas.translate(width, 0);
             mDrawables.get(1).draw(canvas);
             canvas.restore();
-        } else {
+
+            if (mDrawables.size() == 3) {
+                // Paint right half
+                canvas.save();
+                canvas.scale(.5f,.5f);
+                //canvas.clipRect(width / 2, 0, width, height);
+                canvas.translate(width/2, height);
+                mDrawables.get(2).draw(canvas);
+                canvas.restore();
+            }
+        } else if (mDrawables.size() >= 4) {
             // Paint top right
             canvas.save();
             canvas.scale(.5f, .5f);
@@ -74,9 +82,7 @@ public class MultiDrawable extends Drawable {
             canvas.translate(0, height);
             mDrawables.get(2).draw(canvas);
             canvas.restore();
-        }
 
-        if (mDrawables.size() >= 4) {
             // Paint top left
             canvas.save();
             canvas.scale(.5f, .5f);
