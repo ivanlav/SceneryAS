@@ -2,4 +2,5 @@
 <resources>
     <dimen name="custom_profile_image">48dp</dimen>
     <dimen name="custom_profile_padding">48dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
 </resources>

@@ -46,7 +46,30 @@ public class MultiDrawable extends Drawable {
         canvas.save();
         canvas.clipRect(0, 0, width, height);
 
-        if (mDrawables.size() == 2 || mDrawables.size() == 3) {
+        if (mDrawables.size() == 2) {
+
+            canvas.save();
+
+            canvas.scale(.5f,.5f);
+            canvas.translate(0, height/2);
+            //canvas.clipRect(0, 0, width / 2, height/ 2);
+            //canvas.translate(0, height/2);
+            mDrawables.get(0).draw(canvas);
+            canvas.restore();
+
+            // Paint right half
+            canvas.save();
+
+            canvas.scale(.5f,.5f);
+            canvas.translate(width, height/2);
+            //canvas.clipRect(width / 2, 0, width, height);
+
+            mDrawables.get(1).draw(canvas);
+            canvas.restore();
+
+
+        }if (mDrawables.size() == 3) {
+
             // Paint left half
             canvas.save();
             canvas.scale(.5f,.5f);
@@ -55,6 +78,7 @@ public class MultiDrawable extends Drawable {
             mDrawables.get(0).draw(canvas);
             canvas.restore();
 
+            // Paint right half
             canvas.save();
             canvas.scale(.5f,.5f);
             //canvas.clipRect(width / 2, 0, width, height);
@@ -62,16 +86,15 @@ public class MultiDrawable extends Drawable {
             mDrawables.get(1).draw(canvas);
             canvas.restore();
 
-            if (mDrawables.size() == 3) {
-                // Paint right half
-                canvas.save();
-                canvas.scale(.5f,.5f);
-                //canvas.clipRect(width / 2, 0, width, height);
-                canvas.translate(width/2, height);
-                mDrawables.get(2).draw(canvas);
-                canvas.restore();
-            }
-        }if (mDrawables.size() >= 4) {
+            //Pain bottom
+            canvas.save();
+            canvas.scale(.5f,.5f);
+            //canvas.clipRect(width / 2, 0, width, height);
+            canvas.translate(width/2, height);
+            mDrawables.get(2).draw(canvas);
+            canvas.restore();
+        }
+        if (mDrawables.size() >= 4) {
             // Paint top right
             canvas.save();
             canvas.scale(.5f, .5f);

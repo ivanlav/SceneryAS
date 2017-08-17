@@ -60,10 +60,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.Algorithm;
+import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONException;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -295,6 +298,7 @@ public class MapsActivity extends AppCompatActivity implements
             mClusterManager.setOnClusterInfoWindowClickListener(this);
             mClusterManager.setOnClusterItemClickListener(this);
             mClusterManager.setOnClusterItemInfoWindowClickListener(this);
+            mClusterManager.setAlgorithm(new NewAlgorithm<Place>());
 
             CreateMarkers();
             mClusterManager.cluster();
@@ -868,19 +872,24 @@ public class MapsActivity extends AppCompatActivity implements
         private final IconGenerator mClusterIconGenerator = new IconGenerator(getApplicationContext());
         private final ImageView mImageView;
         private final ImageView mClusterImageView;
-       private final int mDimension;
+        private final TextView mTextView;
+        private final int mDimension;
 
         public PlaceRenderer() {
             super(getApplicationContext(), mMap, mClusterManager);
 
-            View multiProfile = getLayoutInflater().inflate(R.layout.multi_profile, null);
-            mClusterIconGenerator.setContentView(multiProfile);
+            View numberIcon = getLayoutInflater().inflate(R.layout.numbericon, null);
+            mClusterIconGenerator.setContentView(numberIcon);
             mClusterIconGenerator.setBackground(null);
 
-            mClusterImageView = (ImageView) multiProfile.findViewById(R.id.multiimage);
+            mClusterImageView = (ImageView) numberIcon.findViewById(R.id.numberIconImage);
+            //mClusterImageView.setScaleX(.4f);
+            //mClusterImageView.setScaleY(.4f);
+
+            mTextView = (TextView) numberIcon.findViewById(R.id.numberIconNumber);
 
             mImageView = new ImageView(getApplicationContext());
-            mDimension = (int) getResources().getDimension(R.dimen.custom_profile_image);
+            mDimension = (int) getResources().getDimension(R.dimen.icon_size);
             //mImageView.setLayoutParams(new ViewGroup.LayoutParams(mDimension, mDimension));
             int padding = (int) getResources().getDimension(R.dimen.custom_profile_padding);
             //mImageView.setPadding(padding, padding, padding, padding);
@@ -892,22 +901,23 @@ public class MapsActivity extends AppCompatActivity implements
         protected void onBeforeClusterItemRendered(Place place, MarkerOptions markerOptions) {
             // Draw a single person.
             // Set the info window to show their name.
-            mImageView.setImageResource(place.Icon);
+            mClusterImageView.setImageResource(place.Icon);
+            mTextView.setText("");
+            //mImageView.setScaleX(.4f);
+            //mImageView.setScaleY(.4f);
             //markerOptions.icon(BitmapDescriptorFactory.fromResource(place.Icon));
-            Bitmap icon = mIconGenerator.makeIcon();
+            Bitmap icon = mClusterIconGenerator.makeIcon();
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
+
         }
 
         @Override
         protected void onBeforeClusterRendered(Cluster<Place> cluster, MarkerOptions markerOptions) {
             // Draw multiple people.
             // Note: this method runs on the UI thread. Don't spend too much time in here (like in this example).
-            List<Drawable> placeIcons = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
-            int width = mDimension;
-            int height = mDimension;
-            List<Integer> difficons = new ArrayList<Integer>();
 
 
+            /*
 
             for (Place p : cluster.getItems()) {
                 // Draw 4 at most.
@@ -921,13 +931,47 @@ public class MapsActivity extends AppCompatActivity implements
                     placeIcons.add(drawable);
                 }
             }
+            */
 
-            MultiDrawable multiDrawable = new MultiDrawable(placeIcons);
-            multiDrawable.setBounds(0, 0, width, height);
+            /*
+            if(isSameLocation(cluster)){
 
-            mClusterImageView.setImageDrawable(multiDrawable);
+                List<Drawable> placeIcons = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
+                List<Integer> difficons = new ArrayList<Integer>();
 
-            Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
+                int width = mDimension;
+                int height = mDimension;
+
+                for (Place p : cluster.getItems()) {
+                    // Draw 4 at most.
+                    if (placeIcons.size() == 4) break;
+
+                    Drawable drawable = getResources().getDrawable(p.Icon, getTheme());
+
+
+                    if(difficons.contains(p.Icon) == false) {
+                        difficons.add(p.Icon);
+                        drawable.setBounds(0, 0, width, height);
+                        placeIcons.add(drawable);
+                    }
+                }
+
+                MultiDrawable multiDrawable = new MultiDrawable(placeIcons);
+                multiDrawable.setBounds(0, 0, width, height);
+                mClusterImageView.setImageDrawable(multiDrawable);
+                mTextView.setText("");
+                Bitmap icon = mClusterIconGenerator.makeIcon();
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
+                return;
+            }
+            */
+            //MultiDrawable multiDrawable = new MultiDrawable(placeIcons);
+            //multiDrawable.setBounds(0, 0, width, height);
+
+            //mClusterImageView.setImageDrawable(multiDrawable);
+            mClusterImageView.setImageResource(R.mipmap.numbericon);
+            mTextView.setText(String.valueOf(cluster.getSize()));
+            Bitmap icon = mClusterIconGenerator.makeIcon();
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
 
@@ -938,6 +982,8 @@ public class MapsActivity extends AppCompatActivity implements
         }
 
     }
+
+
 
     public boolean isSameLocation(Cluster<Place> cluster){
 
