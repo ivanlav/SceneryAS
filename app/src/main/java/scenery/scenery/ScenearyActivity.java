@@ -165,10 +165,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
 
             case R.id.action_calendar:
                 // User chose the "Filter" action
-                /*
-                Intent calendarIntent = new Intent(ScenearyActivity.this, PickDate.class);
-                calendarIntent.putExtra("cal", calendar);
-                startActivityForResult(calendarIntent, CALENDAR_RESULT);*/
+
                 showDatePickerDialog(findViewById(android.R.id.content));
 
 
@@ -532,18 +529,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
                 filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
 
                 break;
-            case CALENDAR_RESULT:
-                Log.d("er", "is this ever called?");
-                Bundle c = data.getExtras();
-
-                Calendar newCal = (Calendar) c.getSerializable("cal");
-                //Log.d("er",newCal.toString());
-                calendar = newCal;
-                //Log.d("er",calendar.toString());
-
-                break;
-
-        }
+           }
         reCenterMap();
 
     }
