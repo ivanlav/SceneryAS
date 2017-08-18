@@ -6,39 +6,28 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Debug;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.test.suitebuilder.TestMethod;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.support.v7.view.ActionMode;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,13 +49,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
-import com.google.maps.android.clustering.algo.Algorithm;
-import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONException;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -212,7 +198,7 @@ public class MapsActivity extends AppCompatActivity implements
 
                 case R.id.action_filter:
                     // User chose the "Filter" action
-                    clearInfo();
+                    clearEventView();
                     Intent filterIntent = new Intent(MapsActivity.this, FilterActivity.class);
                     filterIntent.putExtra("fil", filters);
                     startActivityForResult(filterIntent, FILTER_RESULT);
@@ -221,7 +207,7 @@ public class MapsActivity extends AppCompatActivity implements
 
                 case R.id.action_calendar:
                     // User chose the "Filter" action
-                    clearInfo();
+                    clearEventView();
                     Intent calendarIntent = new Intent(MapsActivity.this, PickDate.class);
                     calendarIntent.putExtra("cal", setDate);
                     startActivityForResult(calendarIntent, CALENDAR_RESULT);
@@ -321,12 +307,9 @@ public class MapsActivity extends AppCompatActivity implements
             mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                 @Override
                 public void onMapClick(LatLng latLng) {
-                    clearInfo();
+                    clearEventView();
                 }
             });
-
-
-
         }
 
     public void centerMarker(Marker marker) {
@@ -337,7 +320,7 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     //clear existing info window
-    public void clearInfo() {
+    public void clearEventView() {
         RelativeLayout info = (RelativeLayout) findViewById(R.id.eventview);
         if (info.getVisibility() == RelativeLayout.VISIBLE) {
             info.setVisibility(RelativeLayout.INVISIBLE);
@@ -812,7 +795,7 @@ public class MapsActivity extends AppCompatActivity implements
 
     @Override
     public boolean onClusterClick(Cluster<Place> cluster) {
-        clearInfo();
+        clearEventView();
 
        // String firstName = cluster.getItems().iterator().next().Name;
         //t.makeText(this, cluster.getSize() + " (including " + firstName + ")", Toast.LENGTH_SHORT).show();
@@ -856,7 +839,7 @@ public class MapsActivity extends AppCompatActivity implements
 
     @Override
     public boolean onClusterItemClick(final Place place) {
-        clearInfo();
+        clearEventView();
         setInfoWindow(place);
         MoveMap(new LatLng(place.Latitude,place.Longitude), true, mMap.getCameraPosition().zoom);
         return true;
@@ -983,8 +966,6 @@ public class MapsActivity extends AppCompatActivity implements
 
     }
 
-
-
     public boolean isSameLocation(Cluster<Place> cluster){
 
         LatLng location = null;
@@ -1005,11 +986,5 @@ public class MapsActivity extends AppCompatActivity implements
         Log.e("isl", "true");
         return true;
     }
-
-
-
-
-
-
 
 }
