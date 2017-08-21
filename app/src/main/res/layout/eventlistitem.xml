@@ -6,7 +6,7 @@
     android:padding="10dp">
 
     <ImageView
-        android:id="@+id/imageView4"
+        android:id="@+id/eventListIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@mipmap/mic_icon" />
@@ -23,6 +23,8 @@
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-smallcaps"
             android:text="TextView"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -30,8 +32,9 @@
             android:id="@+id/eventListInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/eventListTitle"
             android:text="TextView"
-            android:layout_below="@id/eventListTitle"/>
+            android:textAlignment="center" />
 
 
     </RelativeLayout>

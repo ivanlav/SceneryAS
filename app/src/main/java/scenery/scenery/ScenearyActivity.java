@@ -2,6 +2,9 @@ package scenery.scenery;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,6 +12,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -40,6 +44,8 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 public class ScenearyActivity extends BaseMapsActivity implements
@@ -51,15 +57,18 @@ public class ScenearyActivity extends BaseMapsActivity implements
     private static final int FILTER_RESULT = 1;
     private static final int CALENDAR_RESULT = 2;
 
-    public LatLng startLoc = new LatLng(42.351035, -71.115051);
+
     ArrayList<FilterItem> filters;
     private Place lastMarkerPlace;
     private float lastZoom;
-    private ArrayList<Place> beginPlaces;
+    public ArrayList<Place> beginPlaces;
+    public ArrayList<Place> currentPlaces;
 
     private static Calendar calendar;
     //public LatLng currLoc;
     private ClusterManager<Place> mClusterManager;
+
+    private String currentView = "Map";
 
     //first to run
     @Override
@@ -78,6 +87,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
             createFilterList();
             calendar = Calendar.getInstance();
         }
+        //Log.e("Mlast",mLastLocation.toString());
+
 
 
     }
@@ -95,10 +106,28 @@ public class ScenearyActivity extends BaseMapsActivity implements
 
             CreateMarkers();
             mClusterManager.cluster();
+            updateList();
 
         }
         Log.e("ACTIVITY:", "RESUME");
         //redraws markers when activity resumes
+    }
+
+    private void updateList() {
+        if(currentView.equals("List")){
+            RecyclerViewFragment newFragment = new RecyclerViewFragment();
+
+            getSupportFragmentManager().popBackStack();
+
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+
+            fragmentTransaction.remove(newFragment);
+
+            fragmentTransaction.replace(R.id.fragment_container,newFragment);
+            fragmentTransaction.addToBackStack(null);
+
+            fragmentTransaction.commit();
+        }
     }
 
     @Override
@@ -204,6 +233,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
             ((ScenearyActivity)getActivity()).CreateMarkers();
             ((ScenearyActivity)getActivity()).mClusterManager.cluster();
             ((ScenearyActivity)getActivity()).reCenterMap();
+            ((ScenearyActivity)getActivity()).updateList();
+
         }
     }
 
@@ -223,9 +254,6 @@ public class ScenearyActivity extends BaseMapsActivity implements
             setInfoWindow(lastMarkerPlace);
         }
 
-        mLastLocation = new Location("");
-        mLastLocation.setLatitude(startLoc.latitude);
-        mLastLocation.setLongitude(startLoc.longitude);
 
         mClusterManager = new ClusterManager<Place>(this, mMap);
         mClusterManager.setRenderer(new PlaceRenderer());
@@ -237,6 +265,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
         mClusterManager.setOnClusterItemClickListener(this);
         mClusterManager.setOnClusterItemInfoWindowClickListener(this);
         mClusterManager.setAlgorithm(new NewAlgorithm<Place>());
+
+        currentPlaces = new ArrayList<Place>();
 
         CreateMarkers();
         mClusterManager.cluster();
@@ -262,6 +292,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
                 clearEventView();
             }
         });
+
+        SetUpTabs();
     }
 
 
@@ -307,6 +339,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
 
         //mMap.clear();
         mClusterManager.clearItems();
+        currentPlaces.clear();
+
         setDateText();
 
         if (beginPlaces == null) {
@@ -359,6 +393,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
         */
 
         //createInfoWindows();
+
+        currentPlaces = sortPlacesByDistance(currentPlaces);
     }
 
     private void setDateText() {
@@ -398,6 +434,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
             if (checkFilter(place)) {
 
                 mClusterManager.addItem(place);
+                currentPlaces.add(place);
             }
         }
     }
@@ -504,10 +541,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
     private void getDirections(Place dirplace) {
         Uri gmmIntentUri = Uri.parse("google.navigation:q=" + dirplace.Address);
 
-        Location placeLoc = new Location("");
-        placeLoc.setLatitude(dirplace.Latitude);
-        placeLoc.setLongitude(dirplace.Longitude);
-        float distance = placeLoc.distanceTo(mLastLocation);
+        float distance = getDistance(dirplace);
         float mile = 1609;
         Log.e("distance", Float.toString(distance));
         if (distance < mile) {
@@ -516,6 +550,16 @@ public class ScenearyActivity extends BaseMapsActivity implements
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         startActivity(mapIntent);
+    }
+
+    private float getDistance(Place dirplace) {
+        Location placeLoc = new Location("");
+        placeLoc.setLatitude(dirplace.Latitude);
+        placeLoc.setLongitude(dirplace.Longitude);
+        Log.e("pLoc",placeLoc.toString());
+        Log.e("mLastLocation",mLastLocation.toString());
+
+        return placeLoc.distanceTo(mLastLocation);
     }
 
     //called when Filter or Calendar exits, saves relevant data
@@ -782,6 +826,90 @@ public class ScenearyActivity extends BaseMapsActivity implements
         Log.e("isl", "true");
         return true;
     }
+
+    public ArrayList<Place> sortPlacesByDistance(ArrayList<Place> placeArr) {
+
+        for (Place place : placeArr) {
+            place.Distance = getDistance(place);
+        }
+
+        Collections.sort(placeArr, new Comparator<Place>() {
+            @Override
+            public int compare(Place o1, Place o2) {
+                return Float.compare(o1.Distance, o2.Distance);
+            }
+        });
+
+        return placeArr;
+    }
+
+    public void SetUpTabs(){
+
+
+        final Fragment newFragment = new RecyclerViewFragment();
+
+        TabLayout tabLayout =  (TabLayout) findViewById(R.id.tab_layout);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+
+                Log.e("Tabselected","yes");
+
+                final FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+
+                switch(tab.getPosition()) {
+                    case 0:
+
+                        currentView = "Map";
+
+
+                        fragmentTransaction.remove(newFragment);
+
+                        getSupportFragmentManager().popBackStack();
+
+
+
+                        Log.e("CASE1","yes");
+
+                        break;
+                    case 1:
+
+                        currentView = "List";
+
+
+
+
+                        fragmentTransaction.replace(R.id.fragment_container,newFragment);
+                        fragmentTransaction.addToBackStack(null);
+
+
+                        Log.e("CASE2","yes");
+
+                        break;
+                }
+
+
+                fragmentTransaction.commit();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+
+
+
+    }
+
+
+
 
 
 

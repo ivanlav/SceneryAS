@@ -31,6 +31,12 @@ public class Place implements Serializable, ClusterItem {
 
     public int Icon;
 
+    public float Distance;
+
+    public float getDistance(){
+        return Distance;
+    }
+
     public Place(String Type, String Name, String Day, String Time, String Address, String Establishment, Double Lat, Double Long) {
         this.Name = Name;
         this.Day = Day;

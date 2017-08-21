@@ -6,6 +6,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
         <android.support.design.widget.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
@@ -14,26 +19,38 @@
             >
 
             <android.support.design.widget.TabItem
+                android:id="@+id/maptab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Map" />
 
             <android.support.design.widget.TabItem
+                android:id="@+id/listab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="List" />
         </android.support.design.widget.TabLayout>
 
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/my_toolbar"
+            android:layout_above="@id/tab_layout"
+
+            >
         <fragment
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/my_toolbar"
-            android:layout_above="@id/tab_layout"
+
             tools:context="scenery.scenery.MapsActivity">
 
         </fragment>
+
+        </RelativeLayout>
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/my_toolbar"
