@@ -874,6 +874,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
                         break;
                     case 1:
 
+                        clearEventView();
+
                         currentView = "List";
 
 

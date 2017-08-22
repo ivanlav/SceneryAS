@@ -288,7 +288,7 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
                 .addOnSuccessListener(new OnSuccessListener<Location>() {
                        @Override
                        public void onSuccess(Location location) {
-                           Log.e("cloc",location.toString());
+                           //Log.e("cloc",location.toString());
 
                            // GPS location can be null if GPS is switched off
                            if (location != null) {
@@ -297,6 +297,11 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
                                //onLocationChanged(location);
                                SetUpMap();
                                Log.e("cmloc",mLastLocation.toString());
+                           }else{
+                               mLastLocation = new Location("");
+                               mLastLocation.setLongitude(startLoc.longitude);
+                               mLastLocation.setLatitude(startLoc.latitude);
+                               SetUpMap();
                            }
                        }
                    })
@@ -305,6 +310,10 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
                        public void onFailure(@NonNull Exception e) {
                            Log.e("MapDemoActivity", "Error trying to get last GPS location");
                            e.printStackTrace();
+                           mLastLocation = new Location("");
+                           mLastLocation.setLongitude(startLoc.longitude);
+                           mLastLocation.setLatitude(startLoc.latitude);
+                           SetUpMap();
                        }
                    });
     }

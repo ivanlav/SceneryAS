@@ -5,7 +5,8 @@
         android:id="@+id/action_filter"
         android:icon="@drawable/ic_filter_black_24dp"
         android:title="@string/action_filter"
-        app:showAsAction="always" />
+        app:showAsAction="always"
+        />
 
     <item
         android:id="@+id/action_calendar"
