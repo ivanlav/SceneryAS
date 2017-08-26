@@ -2,7 +2,6 @@ package scenery.scenery;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
@@ -31,7 +30,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
@@ -40,12 +38,16 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONException;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+
+/*
+Main Activity to Start
+Contains most of the functionality of the Main App Screen
+*/
 
 
 public class ScenearyActivity extends BaseMapsActivity implements
@@ -58,24 +60,27 @@ public class ScenearyActivity extends BaseMapsActivity implements
     private static final int CALENDAR_RESULT = 2;
 
 
-    ArrayList<FilterItem> filters;
+    private ArrayList<FilterItem> filters;
     private Place lastMarkerPlace;
     private float lastZoom;
+
     public ArrayList<Place> beginPlaces;
     public ArrayList<Place> currentPlaces;
 
     private static Calendar calendar;
-    //public LatLng currLoc;
+
     private ClusterManager<Place> mClusterManager;
 
     private String currentView = "Map";
 
-    //first to run
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("ACTIVITY:", "CREATE");
 
         super.onCreate(savedInstanceState);
+
+        //Restore Data if App was stopped
 
         if (savedInstanceState != null) {
             calendar = (Calendar) savedInstanceState.getSerializable("calendar");
@@ -88,9 +93,6 @@ public class ScenearyActivity extends BaseMapsActivity implements
             calendar = Calendar.getInstance();
         }
         //Log.e("Mlast",mLastLocation.toString());
-
-
-
     }
 
     @Override
@@ -183,22 +185,16 @@ public class ScenearyActivity extends BaseMapsActivity implements
                 // User chose the "Settings" item, show the app settings UI...
                 return true;
 
-
             case R.id.action_filter:
                 // User chose the "Filter" action
                 Intent filterIntent = new Intent(ScenearyActivity.this, FilterActivity.class);
                 filterIntent.putExtra("fil", filters);
                 startActivityForResult(filterIntent, FILTER_RESULT);
-
                 return true;
 
             case R.id.action_calendar:
                 // User chose the "Filter" action
-
                 showDatePickerDialog(findViewById(android.R.id.content));
-
-
-
                 return true;
 
             default:
@@ -271,20 +267,6 @@ public class ScenearyActivity extends BaseMapsActivity implements
         CreateMarkers();
         mClusterManager.cluster();
 
-            /*
-
-            CreateMarkers();
-
-            //centers marker and creates info window on marker click
-            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker) {
-                    centerMarker(marker);
-                    return true;
-                }
-            });
-
-*/
         //clears info window on map click
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -293,15 +275,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
             }
         });
 
-        SetUpTabs();
-    }
-
-
-    public void centerMarker(Marker marker) {
-
-        Place mPlace = (Place) marker.getTag();
-        setInfoWindow(mPlace);
-        MoveMap(marker.getPosition(), true, mMap.getCameraPosition().zoom);
+        setUpTabs();
     }
 
     //clear existing info window
@@ -312,7 +286,6 @@ public class ScenearyActivity extends BaseMapsActivity implements
         }
         lastMarkerPlace = null;
     }
-
 
     public void MoveMap(LatLng location, boolean animateCam, float zoom) {
 
@@ -354,46 +327,21 @@ public class ScenearyActivity extends BaseMapsActivity implements
             if (beginPlaces != null) {
                 for (Place p : beginPlaces) {
 
-                    //Log.e("latlng", p.Address);
-
-                    LatLng ll = new LatLng(p.Latitude, p.Longitude);
                     p.Icon = setMarkerIcon(p);
-                    //AddMarker(p, p.Icon);
                     AddCluster(p);
-
-
-                    /*LatLng ll = getLocationFromAddress(getBaseContext(), p.Address);
-                    if (ll != null) {
-                        p.Latitude = ll.latitude;
-                        p.Longitude = ll.longitude;
-                        AddMarker(p, setMarkerIcon(p));
-                    }
-                    */
                 }
 
             }
 
         } else {
             for (Place p : beginPlaces) {
-                // Log.e("plac",p.Name);
+
                 p.Icon = setMarkerIcon(p);
                 if (p.Latitude != null) {
-                    // AddMarker(p, p.Icon);
                     AddCluster(p);
                 }
             }
         }
-        /*
-        if(filters.get(0).getChecked()) {
-            CreateComedyMarkers();
-        }
-        if(filters.get(1).getChecked()) {
-            CreateTriviaMarkers();
-        }
-        */
-
-        //createInfoWindows();
-
         currentPlaces = sortPlacesByDistance(currentPlaces);
     }
 
@@ -407,24 +355,6 @@ public class ScenearyActivity extends BaseMapsActivity implements
         TextView dateText = (TextView) findViewById(R.id.datetext);
         dateText.setText(new StringBuilder().append("Viewing events for: ").append(ConvertDay(dow) + ", ").append(month + 1).append("/")
                 .append(day).append("/").append(year));
-    }
-
-    public void AddMarker(Place place, int res) {
-        Log.e("Mar", "First: " + ConvertDay(calendar.get(Calendar.DAY_OF_WEEK)));
-        Log.e("Mar", "Second: " + place.Day);
-        if ((ConvertDay(calendar.get(Calendar.DAY_OF_WEEK))).equals(place.Day)) {
-
-            Log.e("Mar", "AddMarker: ");
-
-            if (checkFilter(place)) {
-
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(place.Latitude, place.Longitude))
-                        .title(place.Name)
-                        .icon(BitmapDescriptorFactory.fromResource(res)));
-                marker.setTag(place);
-            }
-        }
     }
 
     public void AddCluster(Place place) {
@@ -538,24 +468,24 @@ public class ScenearyActivity extends BaseMapsActivity implements
     }
 
     //adds directions that open in Google Navigation
-    private void getDirections(Place dirplace) {
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + dirplace.Address);
+    private void getDirections(Place place) {
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + place.Address);
 
-        float distance = getDistance(dirplace);
+        float distance = getDistance(place);
         float mile = 1609;
         Log.e("distance", Float.toString(distance));
         if (distance < mile) {
-            gmmIntentUri = Uri.parse("google.navigation:q=" + dirplace.Address + "&mode=w");
+            gmmIntentUri = Uri.parse("google.navigation:q=" + place.Address + "&mode=w");
         }
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         startActivity(mapIntent);
     }
 
-    private float getDistance(Place dirplace) {
+    private float getDistance(Place place) {
         Location placeLoc = new Location("");
-        placeLoc.setLatitude(dirplace.Latitude);
-        placeLoc.setLongitude(dirplace.Longitude);
+        placeLoc.setLatitude(place.Latitude);
+        placeLoc.setLongitude(place.Longitude);
         Log.e("pLoc",placeLoc.toString());
         Log.e("mLastLocation",mLastLocation.toString());
 
@@ -843,7 +773,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
         return placeArr;
     }
 
-    public void SetUpTabs(){
+    public void setUpTabs(){
 
 
         final Fragment newFragment = new RecyclerViewFragment();

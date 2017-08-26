@@ -59,8 +59,6 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
     protected void onStart() {
      super.onStart();
         mGoogleApiClient.connect();
-
-
     }
 
 
@@ -70,19 +68,21 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_maps);
 
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //checkLocationPermission();
+            checkLocationPermission();
         }
+        */
 
 
         mLastLocation = new Location("");
         //mLastLocation.setLongitude(startLoc.longitude);
-       // mLastLocation.setLatitude(startLoc.latitude);
+        //mLastLocation.setLatitude(startLoc.latitude);
 
-        checkLocationPermission();
+        //checkLocationPermission();
 
 
-        InitializeGooglePlayLocation();
+        buildGoogleApiClient();
         getLastLocation();
 
         CreateToolbar();
@@ -107,6 +107,8 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        //Called when Map is ready
+
         mapReady = true;
 
         mMap = googleMap;
@@ -149,11 +151,6 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
         } catch (Resources.NotFoundException e) {
             Log.e(TAG, "Can't find style. Error: ", e);
         }
-    }
-
-    private void InitializeGooglePlayLocation() {
-        //Initialize Google Play Services
-        buildGoogleApiClient();
     }
 
     @Override
@@ -219,6 +216,8 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
     }
 
     public void checkLocationPermission() {
+        //Checks to see if Location Permission is granted
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -279,11 +278,10 @@ abstract class BaseMapsActivity extends AppCompatActivity implements
         // Get last known recent location using new Google Play Services SDK (v11+)
         FusedLocationProviderClient locationClient = LocationServices.getFusedLocationProviderClient(this);
 
-
         Log.e("cloc","checkLocationGood");
         checkLocationPermission();
 
-
+        //Starts map after first location call is made
         locationClient.getLastLocation()
                 .addOnSuccessListener(new OnSuccessListener<Location>() {
                        @Override
