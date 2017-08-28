@@ -1,5 +1,7 @@
 # Sceneary App
 
+App to Visualize consistent, hyper-local events in the Boston area
+
 Android Studio Project
 
 Runnable Test APKs located in ScenearyAPKs
