@@ -2,7 +2,7 @@
 
 Android Studio Project
 
-### Runnable APKs located in ScenearyAPKs
+Runnable Test APKs located in ScenearyAPKs
 
 ## Scripts
 
