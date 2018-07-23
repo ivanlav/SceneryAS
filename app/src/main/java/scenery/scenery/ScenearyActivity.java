@@ -58,6 +58,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
 
     private static final int FILTER_RESULT = 1;
     private static final int CALENDAR_RESULT = 2;
+    private static final int ADDEVENT_RESULT = 3;
 
 
     private ArrayList<FilterItem> filters;
@@ -72,6 +73,7 @@ public class ScenearyActivity extends BaseMapsActivity implements
     private ClusterManager<Place> mClusterManager;
 
     private String currentView = "Map";
+    public DBHandler db;
 
 
     @Override
@@ -79,6 +81,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
         Log.e("ACTIVITY:", "CREATE");
 
         super.onCreate(savedInstanceState);
+
+        db = DBHandler.getsInstance(getApplicationContext());
 
         //Restore Data if App was stopped
 
@@ -195,6 +199,11 @@ public class ScenearyActivity extends BaseMapsActivity implements
             case R.id.action_calendar:
                 // User chose the "Filter" action
                 showDatePickerDialog(findViewById(android.R.id.content));
+                return true;
+
+            case R.id.action_addevent:
+                Intent addEvent = new Intent(ScenearyActivity.this, AddEventActivity.class);
+                startActivityForResult(addEvent, ADDEVENT_RESULT);
                 return true;
 
             default:
@@ -316,34 +325,41 @@ public class ScenearyActivity extends BaseMapsActivity implements
 
         setDateText();
 
-        if (beginPlaces == null) {
 
-            try {
-                beginPlaces = DummyPlaces.parseSheet();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
-            if (beginPlaces != null) {
+            if (beginPlaces == null) {
+                try {
+                    beginPlaces = DummyPlaces.parseSheet();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                if (db.checkEmpty()) {
+                    beginPlaces.addAll(db.placeArrayfromDB());
+                }
+
+                if (beginPlaces != null) {
+                    for (Place p : beginPlaces) {
+
+                        p.Icon = setMarkerIcon(p);
+                        AddCluster(p);
+                    }
+
+                }
+
+            } else {
                 for (Place p : beginPlaces) {
 
                     p.Icon = setMarkerIcon(p);
-                    AddCluster(p);
-                }
-
-            }
-
-        } else {
-            for (Place p : beginPlaces) {
-
-                p.Icon = setMarkerIcon(p);
-                if (p.Latitude != null) {
-                    AddCluster(p);
+                    if (p.Latitude != null) {
+                        AddCluster(p);
+                    }
                 }
             }
+            currentPlaces = sortPlacesByDistance(currentPlaces);
         }
-        currentPlaces = sortPlacesByDistance(currentPlaces);
-    }
+
+
 
     private void setDateText() {
 
@@ -502,6 +518,8 @@ public class ScenearyActivity extends BaseMapsActivity implements
                 Bundle b = data.getExtras();
                 filters = (ArrayList<FilterItem>) b.getSerializable("FilterItems");
 
+                break;
+            case ADDEVENT_RESULT:
                 break;
            }
         reCenterMap();

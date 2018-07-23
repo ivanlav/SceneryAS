@@ -74,7 +74,6 @@ public class Place implements Serializable, ClusterItem {
         this.Type = type;
     }
 
-
     @Override
     public LatLng getPosition() {
         return new LatLng(Latitude,Longitude);

@@ -71,6 +71,17 @@
         </activity>
 
         <activity
+            android:name=".AddEventActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".ScenearyActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ScenearyActivity" />
+        </activity>
+
+        <activity
             android:name=".PickDate"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
